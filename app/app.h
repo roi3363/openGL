@@ -1,9 +1,16 @@
 #ifndef GRAPHICS_APP_H
 #define GRAPHICS_APP_H
 
-#include "../include/glm/glm.hpp"
-#include "../include/glm/gtc/matrix_transform.hpp"
-#include "../include/glm/gtc/type_ptr.hpp"
+#include <glad.h>
+#include <glfw3.h>
+
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
+#include "shaders/shader.h"
+#include "textures/texture.h"
+#include "textures/texture.h"
 
 float vertices[] = {
         // positions          // texture coords

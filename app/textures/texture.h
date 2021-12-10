@@ -1,7 +1,7 @@
 #ifndef GRAPHICS_TEXTURE_H
 #define GRAPHICS_TEXTURE_H
 
-#include "../include/stb_image.h"
+#include <stb_image.h>
 
 class Texture {
 public:
