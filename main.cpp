@@ -2,7 +2,7 @@
 
 int main() {
     App app;
-    app.load();
+    app.setup();
     app.run();
     app.close();
     return 0;

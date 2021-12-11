@@ -1,28 +1,91 @@
 #ifndef GRAPHICS_APP_H
 #define GRAPHICS_APP_H
 
+// sys libraries
+#include <string>
+#include <fstream>
+#include <sstream>
+#include <iostream>
+#include <experimental/filesystem>
+// OpenGL
 #include <glad.h>
 #include <glfw3.h>
-
+// glm
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-
+#include <glm/gtx/string_cast.hpp>
+// App files
 #include "shaders/shader.h"
 #include "textures/texture.h"
 #include "textures/texture.h"
+#include "camera/camera.h"
+
 
 float vertices[] = {
-        // positions          // texture coords
-        0.5f,  0.5f, 0.0f,   1.0f, 1.0f, // top right
-        0.5f, -0.5f, 0.0f,   1.0f, 0.0f, // bottom right
-        -0.5f, -0.5f, 0.0f,   0.0f, 0.0f, // bottom left
-        -0.5f,  0.5f, 0.0f,   0.0f, 1.0f  // top left
+        -0.5f, -0.5f, -0.5f, 0.0f, 0.0f,
+        0.5f, -0.5f, -0.5f, 1.0f, 0.0f,
+        0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
+        0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
+        -0.5f, 0.5f, -0.5f, 0.0f, 1.0f,
+        -0.5f, -0.5f, -0.5f, 0.0f, 0.0f,
+
+        -0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
+        0.5f, -0.5f, 0.5f, 1.0f, 0.0f,
+        0.5f, 0.5f, 0.5f, 1.0f, 1.0f,
+        0.5f, 0.5f, 0.5f, 1.0f, 1.0f,
+        -0.5f, 0.5f, 0.5f, 0.0f, 1.0f,
+        -0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
+
+        -0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
+        -0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
+        -0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
+        -0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
+        -0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
+        -0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
+
+        0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
+        0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
+        0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
+        0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
+        0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
+        0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
+
+        -0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
+        0.5f, -0.5f, -0.5f, 1.0f, 1.0f,
+        0.5f, -0.5f, 0.5f, 1.0f, 0.0f,
+        0.5f, -0.5f, 0.5f, 1.0f, 0.0f,
+        -0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
+        -0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
+
+        -0.5f, 0.5f, -0.5f, 0.0f, 1.0f,
+        0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
+        0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
+        0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
+        -0.5f, 0.5f, 0.5f, 0.0f, 0.0f,
+        -0.5f, 0.5f, -0.5f, 0.0f, 1.0f
 };
-unsigned int indices[] = {
-        0, 1, 3, // first triangle
-        1, 2, 3  // second triangle
+
+// world space positions of our cubes
+glm::vec3 cubePositions[] = {
+        glm::vec3(0.0f, 0.0f, 0.0f),
+        glm::vec3(2.0f, 5.0f, -15.0f),
+        glm::vec3(-1.5f, -2.2f, -2.5f),
+        glm::vec3(-3.8f, -2.0f, -12.3f),
+        glm::vec3(2.4f, -0.4f, -3.5f),
+        glm::vec3(-1.7f, 3.0f, -7.5f),
+        glm::vec3(1.3f, -2.0f, -2.5f),
+        glm::vec3(1.5f, 2.0f, -2.5f),
+        glm::vec3(1.5f, 0.2f, -1.5f),
+        glm::vec3(-1.3f, 1.0f, -1.5f)
 };
+
+float deltaTime = 0.0f;
+float lastFrame = 0.0f;
+
+
+
+
 
 class App {
     const int SCR_WIDTH = 800;
@@ -37,20 +100,25 @@ public:
 
     App() {
         initialiseWindow();
-        shader = new Shader("../shaders/vertex.frag", "../shaders/fragment.frag");
+        shader = new Shader("../app/shaders/vertex.frag", "../app/shaders/fragment.frag");
         texture = new Texture();
     }
 
+    /*
+     *
+     */
     void run() const {
         glUseProgram(shader->ID);
-//        GLuint texture1 = Texture::loadTexture("../images/kathleen.jpeg", GL_RGB);
-        GLuint texture1 = Texture::loadTexture("../images/container.jpg", GL_RGB);
-        GLuint texture2 = Texture::loadTexture("../images/awesomeface.png", GL_RGBA);
-        shader->setInt("texture1", 0);
-        shader->setInt("texture2", 1);
+
+        GLuint texture1 = Texture::loadTexture("../images/container.jpg", GL_RGB, shader, 0);
+        GLuint texture2 = Texture::loadTexture("../images/awesomeface.png", GL_RGBA, shader, 1);
 
         while (!glfwWindowShouldClose(window)) {
-            processInput();
+            float currentFrame = glfwGetTime();
+            deltaTime = currentFrame - lastFrame;
+            lastFrame = currentFrame;
+
+            Camera::processInput(window);
 
             glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -60,69 +128,57 @@ public:
 
             shader->use();
 
-            // create transformations
-//            float x = 0;
-            float x = glm::sin((float(glfwGetTime())));
-//            float y = 0.0f;
-            float y = glm::sin((float(glfwGetTime())));
-//            float z = 0.0f;
-            float z = glm::sin((float(glfwGetTime())));
-            glm::vec3 translationMat = glm::vec3(x, y, z);
-            glm::mat4 transform = glm::mat4(1.0f); // make sure to initialize matrix to identity matrix first
-            transform = glm::translate(transform, translationMat);
-            transform = glm::rotate(transform, (float)glfwGetTime(), glm::vec3(1.0f, 1.0f, 0.0f));
+            // Projection
+            glm::mat4 projection = glm::mat4(1.0f);
+            projection = glm::perspective(glm::radians(fov), (float) SCR_WIDTH / (float) SCR_HEIGHT, 0.1f, 100.0f);
+            shader->setMat4("projection", projection);
 
-            GLint transformLoc = glGetUniformLocation(shader->ID, "transform");
-            glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(transform));
+            // View
+            glm::mat4 view = glm::mat4(1.0f);
+            view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
+            shader->setMat4("view", view);
 
-            // render container
             glBindVertexArray(VAO);
-            glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
+            for (auto & cubePosition : cubePositions) {
+                // Model
+                glm::mat4 model = glm::mat4(1.0f);
+                model = glm::translate(model, cubePosition);
+                model = glm::rotate(model, (float) glfwGetTime(), glm::vec3(1.0f, 0.3f, 0.5f));
+                shader->setMat4("model", model);
+                glDrawArrays(GL_TRIANGLES, 0, 36);
+            }
 
             glfwSwapBuffers(window);
             glfwPollEvents();
         }
     }
 
-    void load() {
+    /*
+     *
+     */
+    void setup() {
         initBuffers();
-
         bindVBO(vertices, sizeof(vertices));
-        bindEBO(indices, sizeof(indices));
-
-        // position attribute
+//        bindEBO(indices, sizeof(indices));
+        // Position attribute
         setVertexAttrs(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), nullptr);
-        // texture coord attribute
+        // Texture coordinates attribute
         setVertexAttrs(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *) (3 * sizeof(float)));
     }
 
+    /*
+     *
+     */
     void initBuffers() {
         glGenVertexArrays(1, &VAO);
         glGenBuffers(1, &VBO);
-        glGenBuffers(1, &EBO);
+//        glGenBuffers(1, &EBO);
         glBindVertexArray(VAO);
     }
 
-    static void setVertexAttrs(GLuint index,
-                               GLint size,
-                               GLenum type,
-                               GLboolean normalized,
-                               GLsizei stride,
-                               const void *pointer) {
-        glVertexAttribPointer(index, size, type, normalized, stride, pointer);
-        glEnableVertexAttribArray(index);
-    }
-
-    void bindVBO(GLfloat data[], int dataSize) const {
-        glBindBuffer(GL_ARRAY_BUFFER, VBO);
-        glBufferData(GL_ARRAY_BUFFER, dataSize, data, GL_STATIC_DRAW);
-    }
-
-    void bindEBO(GLuint data[], int dataSize) const {
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, dataSize, data, GL_STATIC_DRAW);
-    }
-
+    /*
+     *
+     */
     void initialiseWindow() {
         // glfw: initialize and configure
         glfwInit();
@@ -138,10 +194,14 @@ public:
             glfwTerminate();
             exit(1);
         }
+
         glfwMakeContextCurrent(window);
         glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+        glfwSetCursorPosCallback(window, Camera::mouseCallback);
+        glfwSetScrollCallback(window, Camera::scrollCallback);
 
-        // glad: load all OpenGL function pointers
+        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
         if (!gladLoadGLLoader((GLADloadproc) glfwGetProcAddress)) {
             std::cout << "Failed to initialize GLAD" << std::endl;
             exit(1);
@@ -150,18 +210,45 @@ public:
         glEnable(GL_DEPTH_TEST);
     }
 
-    void processInput() const {
-        if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-            glfwSetWindowShouldClose(window, true);
-    }
-
+    /*
+     *
+     */
     static void framebuffer_size_callback(GLFWwindow *window, int width, int height) {
         glViewport(0, 0, width, height);
     }
 
+    /*
+     *
+     */
+    void bindVBO(GLfloat data[], int dataSize) const {
+        glBindBuffer(GL_ARRAY_BUFFER, VBO);
+        glBufferData(GL_ARRAY_BUFFER, dataSize, data, GL_STATIC_DRAW);
+    }
+
+    /*
+     *
+     */
+    static void
+    setVertexAttrs(GLuint index, GLint size, GLenum type, GLboolean normalized, GLsizei stride, const void *pointer) {
+        glVertexAttribPointer(index, size, type, normalized, stride, pointer);
+        glEnableVertexAttribArray(index);
+    }
+
+    /*
+     *
+     */
+    void bindEBO(GLuint data[], int dataSize) const {
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, dataSize, data, GL_STATIC_DRAW);
+    }
+
+    /*
+     *
+     */
     void close() {
         glDeleteVertexArrays(1, &VAO);
         glDeleteBuffers(1, &VBO);
+//        glDeleteBuffers(1, &EBO);
         delete shader;
         delete texture;
         glfwTerminate();
