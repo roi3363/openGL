@@ -83,10 +83,6 @@ glm::vec3 cubePositions[] = {
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 
-
-
-
-
 class App {
     const int SCR_WIDTH = 800;
     const int SCR_HEIGHT = 600;
@@ -134,8 +130,7 @@ public:
             shader->setMat4("projection", projection);
 
             // View
-            glm::mat4 view = glm::mat4(1.0f);
-            view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
+            glm::mat4 view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
             shader->setMat4("view", view);
 
             glBindVertexArray(VAO);
