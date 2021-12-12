@@ -96,7 +96,7 @@ public:
 
     App() {
         initialiseWindow();
-        shader = new Shader("../app/shaders/vertex.frag", "../app/shaders/fragment.frag");
+        shader = new Shader("/home/antony/projects/openGL/app/shaders/vertex.frag", "/home/antony/projects/openGL/app/shaders/fragment.frag");
         texture = new Texture();
     }
 
@@ -106,8 +106,8 @@ public:
     void run() const {
         glUseProgram(shader->ID);
 
-        GLuint texture1 = Texture::loadTexture("../images/container.jpg", GL_RGB, shader, 0);
-        GLuint texture2 = Texture::loadTexture("../images/awesomeface.png", GL_RGBA, shader, 1);
+        GLuint texture1 = Texture::loadTexture("/home/antony/projects/openGL/images/container.jpg", GL_RGB, shader, 0);
+        GLuint texture2 = Texture::loadTexture("/home/antony/projects/openGL/images/awesomeface.png", GL_RGBA, shader, 1);
 
         while (!glfwWindowShouldClose(window)) {
             float currentFrame = glfwGetTime();
@@ -180,7 +180,7 @@ public:
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-        glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+        // glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 
         // glfw window creation
         window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", nullptr, nullptr);
