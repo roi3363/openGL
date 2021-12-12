@@ -4,7 +4,7 @@ project(graphics)
 set(CMAKE_CXX_STANDARD 17)
 
 # Add header file
-set(GLFW_H /usr/local/Cellar/glfw/3.3.5/include/GLFW)
+set(GLFW_H find_package(glfw3))
 set(ASSIMP_H /usr/local/Cellar/assimp/5.1.2/include)
 include_directories(include ${GLFW_H} ${ASSIMP_H})
 
