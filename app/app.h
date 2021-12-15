@@ -6,6 +6,7 @@
 #include <fstream>
 #include <sstream>
 #include <iostream>
+#include <vector>
 #include <experimental/filesystem>
 // OpenGL
 #include <glad.h>
@@ -15,7 +16,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/string_cast.hpp>
-#include <vector>
+#include <glm/ext.hpp>
 // App files
 #include "shaders/shader.h"
 #include "textures/texture.h"
@@ -32,8 +33,8 @@ float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 
 class App {
-    const int SCR_WIDTH = 800;
-    const int SCR_HEIGHT = 600;
+    const int SCR_WIDTH = 1920;
+    const int SCR_HEIGHT = 1080;
     Shader *shader;
     Texture *texture;
     GLFWwindow *window{};
@@ -41,40 +42,60 @@ class App {
     GLuint VBO{};
     GLuint EBO{};
 
-    mat4 transform = mat4(1.0f);
-    vec3 color = vec3(1.0f, 0.4f, 0.2f);
+    mat4 model = mat4(1.0f);
+    vec3 colorAxes = vec3(0.0f, 0.0f, 0.0f);
+    vec3 colorFunc = vec3(0.8f, 0.2f, 0.4f);
 
     vec3 xStart = vec3(-1.0f, 0.0f, 0.0f);
     vec3 xEnd = vec3(1.0f, 0.0f, 0.0f);
     vec3 yStart = vec3(0.0f, 1.0f, 0.0f);
     vec3 yEnd = vec3(0.0f, -1.0f, 0.0f);
 
-    vector<float> vertices;
-    vector<float> verticesY;
+    vector<float> axesData;
+    vector<float> funcData;
 
 public:
     App() {
         initialiseWindow();
         shader = new Shader("../app/shaders/vertex.frag", "../app/shaders/fragment.frag");
         texture = new Texture();
-        vertices = {
+        axesData = {
                 xStart.x, xStart.y, xStart.z,
                 xEnd.x, xEnd.y, xEnd.z,
                 yStart.x, yStart.y, yStart.z,
                 yEnd.x, yEnd.y, yEnd.z,
         };
-        verticesY = {
-                yStart.x, yStart.y, yStart.z,
-                yEnd.x, yEnd.y, yEnd.z,
-        };
+        initFunc(f, 1000);
+        axesData.insert(axesData.end(), funcData.begin(), funcData.end());
     }
 
-    static vector<vec3> f(int n) {
-        vector<vec3> data;
-        for (int i = 0; i <= n; i++) {
-            data[i] = vec3(i, i + 12, 0.0f);
+    void printVec(vec3 vec) {
+        printf("%f %f %f\n", vec.x, vec.y, vec.z);
+    }
+
+    static float f(float x) {
+        return sin(x);
+    }
+
+    void addToFuncData(vec3 vec) {
+        funcData.emplace_back(vec.x);
+        funcData.emplace_back(vec.y);
+        funcData.emplace_back(vec.z);
+    }
+
+    void initFunc(std::function<float(float)> func, int n) {
+        int a = 10;
+        for (int x = 0; x <= n; x++) {
+            float y = func(x);
+            vec3 vec = vec3(x, y, 0.0f) / (float) n;
+            printVec(vec);
+            if (x == 0) {
+                addToFuncData(vec);
+            } else {
+                addToFuncData(vec);
+                addToFuncData(vec);
+            }
         }
-        return data;
     }
 
     /*
@@ -84,17 +105,19 @@ public:
         glUseProgram(shader->ID);
 
         while (!glfwWindowShouldClose(window)) {
-
             float currentFrame = glfwGetTime();
             deltaTime = currentFrame - lastFrame;
             lastFrame = currentFrame;
 
             Camera::processInput(window);
 
-            glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+            glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-            draw();
+
+            shader->use();
+            glBindVertexArray(VAO);
+            draw(axesData, colorAxes);
 
             glfwSwapBuffers(window);
             glfwPollEvents();
@@ -106,48 +129,27 @@ public:
      *
      */
     void setup() {
-        initBuffers();
-        bindVBO();
-        printf("%d\n", GL_LINE_WIDTH);
-
-        glLineWidth(50);
-        printf("%d\n", GL_LINE_WIDTH);
-//        glEnable(GL_LINE_WIDTH);
-        setVertexAttrs(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), nullptr);
+        // VAO
+        glGenVertexArrays(1, &VAO);
+        glBindVertexArray(VAO);
+        // VBO
+        glGenBuffers(1, &VBO);
+        glBindBuffer(GL_ARRAY_BUFFER, VBO);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(axesData) * axesData.size(), axesData.data(), GL_STATIC_DRAW);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), nullptr);
+        glEnableVertexAttribArray(0);
     }
 
 private:
     /*
      *
      */
-    void draw() {
-        shader->use();
-        
-        shader->setMat4("transform", transform * 20.0f);
+    void draw(vector<float> data, vec3 color) {
         shader->setVec3("color", color);
-
-        glBindVertexArray(VAO);
-        glDrawArrays(GL_LINES, 0, 4);
+        shader->setMat4("model", model);
+        glDrawArrays(GL_LINES, 0, data.size() / 3);
     }
 
-
-
-    /*
-     *
-     */
-    void initBuffers() {
-        glGenVertexArrays(1, &VAO);
-        glGenBuffers(1, &VBO);
-        glBindVertexArray(VAO);
-    }
-
-    /*
-     *
-     */
-    void bindVBO() const {
-        glBindBuffer(GL_ARRAY_BUFFER, VBO);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(vertices) * vertices.size(), vertices.data(), GL_STATIC_DRAW);
-    }
 
     /*
      *
