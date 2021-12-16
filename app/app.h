@@ -8,6 +8,7 @@
 #include <iostream>
 #include <vector>
 #include <experimental/filesystem>
+#include "functional"
 // OpenGL
 #include <glad.h>
 #include <glfw3.h>
@@ -52,21 +53,20 @@ class App {
     vec3 yEnd = vec3(0.0f, -1.0f, 0.0f);
 
     vector<float> axesData;
+  vector<float> planeCorners;
     vector<float> funcData;
 
 public:
     App() {
         initialiseWindow();
-        shader = new Shader("../app/shaders/vertex.frag", "../app/shaders/fragment.frag");
+        shader = new Shader("./app/shaders/vertex.frag", "./app/shaders/fragment.frag");
         texture = new Texture();
-        axesData = {
-                xStart.x, xStart.y, xStart.z,
-                xEnd.x, xEnd.y, xEnd.z,
-                yStart.x, yStart.y, yStart.z,
-                yEnd.x, yEnd.y, yEnd.z,
+        planeCorners = {
+	  -1.0, 1.0, 0.0,
+	  -1.0, -1.0, 0.0,
+	  1.0, 1.0, 0.0
         };
-        initFunc(f, 1000);
-        axesData.insert(axesData.end(), funcData.begin(), funcData.end());
+        //axesData.insert(axesData.end(), funcData.begin(), funcData.end());
     }
 
     void printVec(vec3 vec) {
@@ -117,7 +117,7 @@ public:
 
             shader->use();
             glBindVertexArray(VAO);
-            draw(axesData, colorAxes);
+            draw(planeCorners, colorAxes);
 
             glfwSwapBuffers(window);
             glfwPollEvents();
@@ -135,7 +135,7 @@ public:
         // VBO
         glGenBuffers(1, &VBO);
         glBindBuffer(GL_ARRAY_BUFFER, VBO);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(axesData) * axesData.size(), axesData.data(), GL_STATIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(planeCorners) * planeCorners.size(), planeCorners.data(), GL_STATIC_DRAW);
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), nullptr);
         glEnableVertexAttribArray(0);
     }
@@ -147,7 +147,8 @@ private:
     void draw(vector<float> data, vec3 color) {
         shader->setVec3("color", color);
         shader->setMat4("model", model);
-        glDrawArrays(GL_LINES, 0, data.size() / 3);
+        //glDrawArrays(GL_LINES, 0, data.size() / 3);
+	glDrawArrays(GL_TRIANGLES, 0, 3);
     }
 
 
@@ -178,9 +179,9 @@ private:
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-        if (IS_APPLE) {
-            glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-        }
+        //if (IS_APPLE) {
+        //    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+        //}
 
         // glfw window creation
         window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "Graph", nullptr, nullptr);
