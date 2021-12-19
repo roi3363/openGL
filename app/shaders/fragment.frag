@@ -20,19 +20,15 @@ float axis(vec2 st, float thickness) {
 }
 
 void main() {
-  float widthThickness = 0.1;
-  float heightThickness = 0.1;
-
   float scale = 100.0;
   float numTiles = 2.0;
   float res = numTiles / scale;
-  //float res = widthThickness * heightThickness;
 
   vec2 grid_uv = v_uv.xy * scale;
   float x = grid(grid_uv, res); 
-  float yAxis = axis(v_uv.xy, 1.0 / scale);
+  float axisColor = axis(v_uv.xy, 1.0 / scale);
   
   FragColor.rgb = vec3(0.5) * x;
-  FragColor.r = yAxis;
+  FragColor.r = axisColor;
   FragColor.a = 1.0;
 }
