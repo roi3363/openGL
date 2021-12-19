@@ -45,7 +45,7 @@ unsigned int indices[] = {  // note that we start from 0!
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 float planeCorners[] = {
-        1.0f, 1.0f, 0.0f,  // top right
+        1.0f, 1.0f, 1.0f,  // top right
         1.0f, -1.0f, 0.0f,  // bottom right
         -1.0f, -1.0f, 0.0f,  // bottom left
         -1.0f, 1.0f, 0.0f   // top left
@@ -77,7 +77,7 @@ class App {
 public:
     App() {
         initialiseWindow();
-        shader = new Shader("../app/shaders/vertex.frag", "../app/shaders/fragment.frag");
+        shader = new Shader("./app/shaders/vertex.frag", "./app/shaders/fragment.frag");
         texture = new Texture();
 
     }
