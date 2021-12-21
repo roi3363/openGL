@@ -22,6 +22,8 @@
 // App files
 
 #include "shaders/shader.h"
+
+
 #include "camera/camera.h"
 #include "geometry.h"
 
@@ -45,7 +47,17 @@ class App {
 public:
     App() {
         initialiseWindow();
-	geometry = new Geometry();
+        float vertices[] = {
+            1.0f,  1.0f,  1.0f, // top right
+            1.0f,  -1.0f, 0.0f, // bottom right
+            -1.0f, -1.0f, 0.0f, // bottom left
+            -1.0f, 1.0f,  0.0f  // top left
+        };
+
+        unsigned int indices[] = {0, 3, 2, 0, 2, 1};
+
+        geometry = new Geometry(vertices, sizeof(vertices),
+			    indices, sizeof(indices));
     }
 
     void printVec(vec3 vec) { printf("%f %f %f\n", vec.x, vec.y, vec.z); }

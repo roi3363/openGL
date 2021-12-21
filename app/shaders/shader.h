@@ -5,19 +5,35 @@ class Shader {
 public:
     GLuint ID;
 
-    Shader(const char *vertexPath, const char *fragmentPath) {
+    Shader(const char *vertexPath,
+	   const char *fragmentPath){ //,
+	   //const char *geometryPath = nullptr) {
         const std::string &vShaderCode = getShaderCode(vertexPath);
         const std::string &fShaderCode = getShaderCode(fragmentPath);
 
-        GLuint vertex = compileShader(GL_VERTEX_SHADER, vShaderCode.c_str());
+	GLuint vertex = compileShader(GL_VERTEX_SHADER, vShaderCode.c_str());
         GLuint fragment = compileShader(GL_FRAGMENT_SHADER, fShaderCode.c_str());
+	//GLuint geometry = nullptr;
 
+	//if (geometryPath) {
+	//  geometry = compileShader(GL_GEOMETRY_SHADER, gShaderCode.c_str());
+	//}
+	
+	//const std::string &gShaderCode = getShaderCode(geometryPath);
+        
         ID = glCreateProgram();
         glAttachShader(ID, vertex);
+
+	//if (geometry) {
+	//glAttachShader(ID, geometry);
+	//}
+
         glAttachShader(ID, fragment);
+	
         glLinkProgram(ID);
         checkCompileErrors(ID, "program");
         glDeleteShader(vertex);
+	//glDeleteShader(geometry);
         glDeleteShader(fragment);
     }
 
