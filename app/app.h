@@ -21,10 +21,10 @@
 #include <glm/ext.hpp>
 // App files
 
-#include "shaders/shader.h"
+#include "shader.h"
 
 
-#include "camera/camera.h"
+#include "camera.h"
 #include "geometry.h"
 
 using glm::mat4;

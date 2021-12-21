@@ -19,7 +19,7 @@
 #include <glm/gtx/string_cast.hpp>
 #include <glm/ext.hpp>
 
-#include "shaders/shader.h"
+#include "shader.h"
 
 using glm::mat4;
 
