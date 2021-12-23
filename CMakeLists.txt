@@ -6,7 +6,7 @@ set(CMAKE_CXX_STANDARD 17)
 # Add header file
 if (APPLE)
     set(GLFW_H /usr/local/Cellar/glfw/3.3.5/include/GLFW)
-elseif(LINUX)
+elseif(UNIX)
     set(GLFW_H /usr/include/GLFW/)
 endif()
 include_directories(include ${GLFW_H} ${ASSIMP_H})
@@ -14,11 +14,13 @@ include_directories(include ${GLFW_H} ${ASSIMP_H})
 # Add target link
 if (APPLE)
     set(GLFW_LINK /usr/local/Cellar/glfw/3.3.5/lib/libglfw.3.dylib)
-elseif(LINUX)
+    link_libraries(${GLFW_LINK} ${ASSIMP_LINK})
+elseif(UNIX)
     set(GLFW_LINK /usr/lib/x86_64-linux-gnu/libglfw.so)
+    link_libraries(${GLFW_LINK} ${CMAKE_DL_LIBS} ${ASSIMP_LINK})
 endif()
 
-link_libraries(${GLFW_LINK} ${ASSIMP_LINK})
+
 
 # Execute compilation command
 if (APPLE)
