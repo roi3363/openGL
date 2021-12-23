@@ -2,11 +2,13 @@
 #define GRAPHICS_APP_H
 
 // sys libraries
+#include <iterator>
 #include <string>
 #include <fstream>
 #include <sstream>
 #include <iostream>
-#include <experimental/filesystem>
+#include <vector>
+#include "functional"
 // OpenGL
 #include <glad.h>
 #include <glfw3.h>
@@ -15,75 +17,26 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/string_cast.hpp>
+#include <glm/ext.hpp>
 // App files
-#include "shaders/shader.h"
-#include "textures/texture.h"
-#include "textures/texture.h"
-#include "camera/camera.h"
 
+using glm::mat4;
+using glm::vec3;
+using glm::radians;
+using glm::lookAt;
+using std::vector;
+using glm::mat4;
+using std::string;
 
-float vertices[] = {
-        -0.5f, -0.5f, -0.5f, 0.0f, 0.0f,
-        0.5f, -0.5f, -0.5f, 1.0f, 0.0f,
-        0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
-        0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
-        -0.5f, 0.5f, -0.5f, 0.0f, 1.0f,
-        -0.5f, -0.5f, -0.5f, 0.0f, 0.0f,
-
-        -0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
-        0.5f, -0.5f, 0.5f, 1.0f, 0.0f,
-        0.5f, 0.5f, 0.5f, 1.0f, 1.0f,
-        0.5f, 0.5f, 0.5f, 1.0f, 1.0f,
-        -0.5f, 0.5f, 0.5f, 0.0f, 1.0f,
-        -0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
-
-        -0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
-        -0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
-        -0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
-        -0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
-        -0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
-        -0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
-
-        0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
-        0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
-        0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
-        0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
-        0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
-        0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
-
-        -0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
-        0.5f, -0.5f, -0.5f, 1.0f, 1.0f,
-        0.5f, -0.5f, 0.5f, 1.0f, 0.0f,
-        0.5f, -0.5f, 0.5f, 1.0f, 0.0f,
-        -0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
-        -0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
-
-        -0.5f, 0.5f, -0.5f, 0.0f, 1.0f,
-        0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
-        0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
-        0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
-        -0.5f, 0.5f, 0.5f, 0.0f, 0.0f,
-        -0.5f, 0.5f, -0.5f, 0.0f, 1.0f
-};
-
-// world space positions of our cubes
-glm::vec3 cubePositions[] = {
-        glm::vec3(0.0f, 0.0f, 0.0f),
-        glm::vec3(2.0f, 5.0f, -15.0f),
-        glm::vec3(-1.5f, -2.2f, -2.5f),
-        glm::vec3(-3.8f, -2.0f, -12.3f),
-        glm::vec3(2.4f, -0.4f, -3.5f),
-        glm::vec3(-1.7f, 3.0f, -7.5f),
-        glm::vec3(1.3f, -2.0f, -2.5f),
-        glm::vec3(1.5f, 2.0f, -2.5f),
-        glm::vec3(1.5f, 0.2f, -1.5f),
-        glm::vec3(-1.3f, 1.0f, -1.5f)
-};
+#include "shader.h"
+#include "camera.h"
+#include "geometry.h"
 
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 
 class App {
+<<<<<<< HEAD
     const int SCR_WIDTH = 800;
     const int SCR_HEIGHT = 600;
     Shader *shader;
@@ -115,62 +68,48 @@ public:
             lastFrame = currentFrame;
 
             Camera::processInput(window);
+=======
+  const int SCR_WIDTH = 1920;
+  const int SCR_HEIGHT = 1080;
+  Geometry *geometry;
+  GLFWwindow *window{};
+>>>>>>> 1baa6c4ef981474e294a2b27530486c1ec7b7dd1
 
-            glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  mat4 model = mat4(1.0f);
 
-            Texture::activateTexture(texture1, GL_TEXTURE0);
-            Texture::activateTexture(texture2, GL_TEXTURE1);
+public:
+  App() {
+    initialiseWindow();
+    float vertices[] = {
+        1.0f, 1.0f, 1.0f, // top right
+        1.0f, -1.0f, 0.0f, // bottom right
+        -1.0f, -1.0f, 0.0f, // bottom left
+        -1.0f, 1.0f, 0.0f  // top left
+    };
 
-            shader->use();
+    unsigned int indices[] = {0, 3, 2, 0, 2, 1};
 
-            // Projection
-            glm::mat4 projection = glm::mat4(1.0f);
-            projection = glm::perspective(glm::radians(fov), (float) SCR_WIDTH / (float) SCR_HEIGHT, 0.1f, 100.0f);
-            shader->setMat4("projection", projection);
+    geometry = new Geometry(vertices, sizeof(vertices), indices, sizeof(indices));
+  }
 
-            // View
-            glm::mat4 view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
-            shader->setMat4("view", view);
+  void printVec(vec3 vec) { printf("%f %f %f\n", vec.x, vec.y, vec.z); }
 
-            glBindVertexArray(VAO);
-            for (auto & cubePosition : cubePositions) {
-                // Model
-                glm::mat4 model = glm::mat4(1.0f);
-                model = glm::translate(model, cubePosition);
-                model = glm::rotate(model, (float) glfwGetTime(), glm::vec3(1.0f, 0.3f, 0.5f));
-                shader->setMat4("model", model);
-                glDrawArrays(GL_TRIANGLES, 0, 36);
-            }
+  /*
+   *
+   */
+  void run() {
 
-            glfwSwapBuffers(window);
-            glfwPollEvents();
-        }
-    }
+    while (!glfwWindowShouldClose(window)) {
+      float currentFrame = glfwGetTime();
+      deltaTime = currentFrame - lastFrame;
+      lastFrame = currentFrame;
 
-    /*
-     *
-     */
-    void setup() {
-        initBuffers();
-        bindVBO(vertices, sizeof(vertices));
-//        bindEBO(indices, sizeof(indices));
-        // Position attribute
-        setVertexAttrs(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), nullptr);
-        // Texture coordinates attribute
-        setVertexAttrs(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *) (3 * sizeof(float)));
-    }
+      Camera::processInput(window);
 
-    /*
-     *
-     */
-    void initBuffers() {
-        glGenVertexArrays(1, &VAO);
-        glGenBuffers(1, &VBO);
-//        glGenBuffers(1, &EBO);
-        glBindVertexArray(VAO);
-    }
+      glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+<<<<<<< HEAD
     /*
      *
      */
@@ -203,52 +142,93 @@ public:
         }
 
         glEnable(GL_DEPTH_TEST);
+=======
+      // make call to draw
+      geometry->draw(model);
+      glfwSwapBuffers(window);
+      glfwPollEvents();
+>>>>>>> 1baa6c4ef981474e294a2b27530486c1ec7b7dd1
+    }
+    close();
+  }
+
+  /*
+   *
+   */
+  void setup() {
+    // bind the Vertex Array Object first, then bind and set vertex buffer(s), and then configure vertex attributes(s).
+
+  }
+
+private:
+  /*
+   *
+   */
+  void draw(vector<float> data, vec3 color) {
+    // glDrawArrays(GL_LINES, 0, data.size() / 3);
+
+  }
+
+  /*
+   *
+   */
+  static void setVertexAttrs(GLuint index, GLint size, GLenum type,
+                             GLboolean normalized, GLsizei stride,
+                             const void *pointer) {
+    glVertexAttribPointer(index, size, type, normalized, stride, pointer);
+    glEnableVertexAttribArray(index);
+  }
+
+  /*
+   *
+   */
+  void initialiseWindow() {
+    // glfw: initialize and configure
+    glfwInit();
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
+    if (strcmp(PLATFORM, "APPLE") == 0) {
+      glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
     }
 
-    /*
-     *
-     */
-    static void framebuffer_size_callback(GLFWwindow *window, int width, int height) {
-        glViewport(0, 0, width, height);
+    // glfw window creation
+    window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "Graph", nullptr, nullptr);
+    if (window == nullptr) {
+      std::cout << "Failed to create GLFW createWindow" << std::endl;
+      glfwTerminate();
+      exit(1);
     }
 
-    /*
-     *
-     */
-    void bindVBO(GLfloat data[], int dataSize) const {
-        glBindBuffer(GL_ARRAY_BUFFER, VBO);
-        glBufferData(GL_ARRAY_BUFFER, dataSize, data, GL_STATIC_DRAW);
+    glfwMakeContextCurrent(window);
+    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+    glfwSetCursorPosCallback(window, Camera::mouseCallback);
+    glfwSetScrollCallback(window, Camera::scrollCallback);
+
+//        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    if (!gladLoadGLLoader((GLADloadproc) glfwGetProcAddress)) {
+      std::cout << "Failed to initialize GLAD" << std::endl;
+      exit(1);
     }
 
-    /*
-     *
-     */
-    static void
-    setVertexAttrs(GLuint index, GLint size, GLenum type, GLboolean normalized, GLsizei stride, const void *pointer) {
-        glVertexAttribPointer(index, size, type, normalized, stride, pointer);
-        glEnableVertexAttribArray(index);
-    }
+    glEnable(GL_DEPTH_TEST);
+  }
 
-    /*
-     *
-     */
-    void bindEBO(GLuint data[], int dataSize) const {
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, dataSize, data, GL_STATIC_DRAW);
-    }
+  /*
+   *
+   */
+  static void framebuffer_size_callback(GLFWwindow *window, int width, int height) {
+    glViewport(0, 0, width, height);
+  }
 
-    /*
-     *
-     */
-    void close() {
-        glDeleteVertexArrays(1, &VAO);
-        glDeleteBuffers(1, &VBO);
-//        glDeleteBuffers(1, &EBO);
-        delete shader;
-        delete texture;
-        glfwTerminate();
-    }
+  /*
+   *
+   */
+  void close() const {
+    geometry->destroy();
+    glfwTerminate();
+  }
 };
-
 
 #endif //GRAPHICS_APP_H
