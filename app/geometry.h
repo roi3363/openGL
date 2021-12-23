@@ -1,8 +1,6 @@
 #ifndef GRAPHICS_GEOMETRY_H
 #define GRAPHICS_GEOMETRY_H
 
-using std::filesystem::current_path;
-
 class Geometry {
  public:
   GLuint VAO{};

@@ -36,44 +36,10 @@ float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 
 class App {
-<<<<<<< HEAD
-    const int SCR_WIDTH = 800;
-    const int SCR_HEIGHT = 600;
-    Shader *shader;
-    Texture *texture;
-public:
-    GLFWwindow *window{};
-    GLuint VAO{};
-    GLuint VBO{};
-    GLuint EBO{};
-
-    App() {
-        initialiseWindow();
-        shader = new Shader("/home/antony/projects/openGL/app/shaders/vertex.frag", "/home/antony/projects/openGL/app/shaders/fragment.frag");
-        texture = new Texture();
-    }
-
-    /*
-     *
-     */
-    void run() const {
-        glUseProgram(shader->ID);
-
-        GLuint texture1 = Texture::loadTexture("/home/antony/projects/openGL/images/container.jpg", GL_RGB, shader, 0);
-        GLuint texture2 = Texture::loadTexture("/home/antony/projects/openGL/images/awesomeface.png", GL_RGBA, shader, 1);
-
-        while (!glfwWindowShouldClose(window)) {
-            float currentFrame = glfwGetTime();
-            deltaTime = currentFrame - lastFrame;
-            lastFrame = currentFrame;
-
-            Camera::processInput(window);
-=======
   const int SCR_WIDTH = 1920;
   const int SCR_HEIGHT = 1080;
   Geometry *geometry;
   GLFWwindow *window{};
->>>>>>> 1baa6c4ef981474e294a2b27530486c1ec7b7dd1
 
   mat4 model = mat4(1.0f);
 
@@ -98,7 +64,6 @@ public:
    *
    */
   void run() {
-
     while (!glfwWindowShouldClose(window)) {
       float currentFrame = glfwGetTime();
       deltaTime = currentFrame - lastFrame;
@@ -109,45 +74,10 @@ public:
       glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
       glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-<<<<<<< HEAD
-    /*
-     *
-     */
-    void initialiseWindow() {
-        // glfw: initialize and configure
-        glfwInit();
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-        // glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-
-        // glfw window creation
-        window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", nullptr, nullptr);
-        if (window == nullptr) {
-            std::cout << "Failed to create GLFW createWindow" << std::endl;
-            glfwTerminate();
-            exit(1);
-        }
-
-        glfwMakeContextCurrent(window);
-        glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-        glfwSetCursorPosCallback(window, Camera::mouseCallback);
-        glfwSetScrollCallback(window, Camera::scrollCallback);
-
-        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-
-        if (!gladLoadGLLoader((GLADloadproc) glfwGetProcAddress)) {
-            std::cout << "Failed to initialize GLAD" << std::endl;
-            exit(1);
-        }
-
-        glEnable(GL_DEPTH_TEST);
-=======
       // make call to draw
       geometry->draw(model);
       glfwSwapBuffers(window);
       glfwPollEvents();
->>>>>>> 1baa6c4ef981474e294a2b27530486c1ec7b7dd1
     }
     close();
   }
@@ -156,8 +86,8 @@ public:
    *
    */
   void setup() {
-    // bind the Vertex Array Object first, then bind and set vertex buffer(s), and then configure vertex attributes(s).
-
+    // bind the Vertex Array Object first, then bind and set vertex buffer(s),
+    // and then configure vertex attributes(s).
   }
 
 private:
@@ -166,7 +96,6 @@ private:
    */
   void draw(vector<float> data, vec3 color) {
     // glDrawArrays(GL_LINES, 0, data.size() / 3);
-
   }
 
   /*
@@ -206,8 +135,8 @@ private:
     glfwSetCursorPosCallback(window, Camera::mouseCallback);
     glfwSetScrollCallback(window, Camera::scrollCallback);
 
-//        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-    if (!gladLoadGLLoader((GLADloadproc) glfwGetProcAddress)) {
+    //        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
       std::cout << "Failed to initialize GLAD" << std::endl;
       exit(1);
     }
@@ -218,7 +147,8 @@ private:
   /*
    *
    */
-  static void framebuffer_size_callback(GLFWwindow *window, int width, int height) {
+  static void framebuffer_size_callback(GLFWwindow *window, int width,
+                                        int height) {
     glViewport(0, 0, width, height);
   }
 
@@ -231,4 +161,4 @@ private:
   }
 };
 
-#endif //GRAPHICS_APP_H
+#endif // GRAPHICS_APP_H
