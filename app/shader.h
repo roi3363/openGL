@@ -9,14 +9,14 @@ public:
          const char *fragmentPath,
          const char *geometryPath = nullptr) {
 
-    const std::string &vShaderCode = getShaderCode(vertexPath);
-    const std::string &fShaderCode = getShaderCode(fragmentPath);
+    const string &vShaderCode = getShaderCode(vertexPath);
+    const string &fShaderCode = getShaderCode(fragmentPath);
 
     GLuint vertex = compileShader(GL_VERTEX_SHADER, vShaderCode.c_str());
     GLuint fragment = compileShader(GL_FRAGMENT_SHADER, fShaderCode.c_str());
 
     if (geometryPath) {
-      const std::string &gShaderCode = getShaderCode(geometryPath);
+      const string &gShaderCode = getShaderCode(geometryPath);
       GLuint geometry = compileShader(GL_GEOMETRY_SHADER, gShaderCode.c_str());
       glAttachShader(ID, geometry);
     }
@@ -34,35 +34,35 @@ public:
   /*
    *
    */
-  void setBool(const std::string &name, bool value) const {
+  void setBool(const string &name, bool value) const {
     glUniform1i(glGetUniformLocation(ID, name.c_str()), (int) value);
   }
 
   /*
    *
    */
-  void setInt(const std::string &name, int value) const {
+  void setInt(const string &name, int value) const {
     glUniform1i(glGetUniformLocation(ID, name.c_str()), value);
   }
 
   /*
    *
    */
-  void setFloat(const std::string &name, float value) const {
+  void setFloat(const string &name, float value) const {
     glUniform1f(glGetUniformLocation(ID, name.c_str()), value);
   }
 
   /*
    *
    */
-  void setMat4(const std::string &name, const glm::mat4 &mat) const {
+  void setMat4(const string &name, const glm::mat4 &mat) const {
     glUniformMatrix4fv(glGetUniformLocation(ID, name.c_str()), 1, GL_FALSE, &mat[0][0]);
   }
 
   /*
    *
    */
-  void setVec3(const std::string &name, const glm::vec3 &vec) const {
+  void setVec3(const string &name, const glm::vec3 &vec) const {
     glUniform3fv(glGetUniformLocation(ID, name.c_str()), 1, &vec[0]);
   }
 
@@ -88,7 +88,7 @@ private:
   /*
    *
    */
-  static std::string getShaderCode(const char *path) {
+  static string getShaderCode(const char *path) {
     std::ifstream file;
     std::stringstream shaderStream;
     file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
@@ -106,7 +106,7 @@ private:
   /*
    *
    */
-  static void checkCompileErrors(unsigned int shader, const std::string &type) {
+  static void checkCompileErrors(unsigned int shader, const string &type) {
     int success;
     char infoLog[1024];
     if (type != "program") {

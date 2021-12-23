@@ -1,27 +1,7 @@
 #ifndef GRAPHICS_GEOMETRY_H
 #define GRAPHICS_GEOMETRY_H
 
-// sys libraries
-#include <string>
-#include <fstream>
-#include <sstream>
-#include <iostream>
-#include <vector>
-#include <experimental/filesystem>
-
-// OpenGL
-#include <glad.h>
-#include <glfw3.h>
-// glm
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
-#include <glm/gtx/string_cast.hpp>
-#include <glm/ext.hpp>
-
-#include "shader.h"
-
-using glm::mat4;
+using std::filesystem::current_path;
 
 class Geometry {
  public:
@@ -31,10 +11,8 @@ class Geometry {
 
   Shader *shader;
 
-  Geometry(float vertices[], int verticesSize,
-	   unsigned int indices[], int indicesSize){
-
-    shader = new Shader("./assets/shaders/vertex.frag", "./assets/shaders/fragment.frag");
+  Geometry(float vertices[], int verticesSize, unsigned int indices[], int indicesSize){
+    shader = new Shader("assets/shaders/vertex.frag", "assets/shaders/fragment.frag");
 
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
@@ -46,26 +24,12 @@ class Geometry {
     glBufferData(GL_ARRAY_BUFFER, verticesSize, vertices, GL_STATIC_DRAW);
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indicesSize, indices,
-                 GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indicesSize, indices, GL_STATIC_DRAW);
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float),
-                          (void *)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *)0);
     glEnableVertexAttribArray(0);
 
-    // note that this is allowed, the call to glVertexAttribPointer registered
-    // VBO as the vertex attribute's bound vertex buffer object so afterwards we
-    // can safely unbind
     glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-    // remember: do NOT unbind the EBO while a VAO is active as the bound
-    // element buffer object IS stored in the VAO; keep the EBO bound.
-    // glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-
-    // You can unbind the VAO afterwards so other VAO calls won't accidentally
-    // modify this VAO, but this rarely happens. Modifying other VAOs requires a
-    // call to glBindVertexArray anyways so we generally don't unbind VAOs (nor
-    // VBOs) when it's not directly necessary.
     glBindVertexArray(0);
 
     glUseProgram(shader->ID);

@@ -1,7 +1,7 @@
 #ifdef __APPLE__
-#define IS_APPLE 1
+#define PLATFORM "APPLE"
 #else
-#define IS_APPLE 0
+#define PLATFORM "LINUX"
 #endif
 
 #include "app/app.h"

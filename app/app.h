@@ -8,7 +8,6 @@
 #include <sstream>
 #include <iostream>
 #include <vector>
-#include <experimental/filesystem>
 #include "functional"
 // OpenGL
 #include <glad.h>
@@ -21,17 +20,17 @@
 #include <glm/ext.hpp>
 // App files
 
-#include "shader.h"
-
-
-#include "camera.h"
-#include "geometry.h"
-
 using glm::mat4;
 using glm::vec3;
 using glm::radians;
 using glm::lookAt;
 using std::vector;
+using glm::mat4;
+using std::string;
+
+#include "shader.h"
+#include "camera.h"
+#include "geometry.h"
 
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
@@ -45,126 +44,122 @@ class App {
   mat4 model = mat4(1.0f);
 
 public:
-    App() {
-        initialiseWindow();
-        float vertices[] = {
-            1.0f,  1.0f,  1.0f, // top right
-            1.0f,  -1.0f, 0.0f, // bottom right
-            -1.0f, -1.0f, 0.0f, // bottom left
-            -1.0f, 1.0f,  0.0f  // top left
-        };
+  App() {
+    initialiseWindow();
+    float vertices[] = {
+        1.0f, 1.0f, 1.0f, // top right
+        1.0f, -1.0f, 0.0f, // bottom right
+        -1.0f, -1.0f, 0.0f, // bottom left
+        -1.0f, 1.0f, 0.0f  // top left
+    };
 
-        unsigned int indices[] = {0, 3, 2, 0, 2, 1};
+    unsigned int indices[] = {0, 3, 2, 0, 2, 1};
 
-        geometry = new Geometry(vertices, sizeof(vertices),
-			    indices, sizeof(indices));
+    geometry = new Geometry(vertices, sizeof(vertices), indices, sizeof(indices));
+  }
+
+  void printVec(vec3 vec) { printf("%f %f %f\n", vec.x, vec.y, vec.z); }
+
+  /*
+   *
+   */
+  void run() {
+
+    while (!glfwWindowShouldClose(window)) {
+      float currentFrame = glfwGetTime();
+      deltaTime = currentFrame - lastFrame;
+      lastFrame = currentFrame;
+
+      Camera::processInput(window);
+
+      glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+      // make call to draw
+      geometry->draw(model);
+      glfwSwapBuffers(window);
+      glfwPollEvents();
     }
+    close();
+  }
 
-    void printVec(vec3 vec) { printf("%f %f %f\n", vec.x, vec.y, vec.z); }
+  /*
+   *
+   */
+  void setup() {
+    // bind the Vertex Array Object first, then bind and set vertex buffer(s), and then configure vertex attributes(s).
 
-    /*
-     *
-     */
-    void run() {
-
-        while (!glfwWindowShouldClose(window)) {
-            float currentFrame = glfwGetTime();
-            deltaTime = currentFrame - lastFrame;
-            lastFrame = currentFrame;
-
-            Camera::processInput(window);
-
-            glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-	    // make call to draw
-	    geometry->draw(model);
-            glfwSwapBuffers(window);
-            glfwPollEvents();
-        }
-        close();
-    }
-
-    /*
-     *
-     */
-    void setup() {
-        // bind the Vertex Array Object first, then bind and set vertex buffer(s), and then configure vertex attributes(s).
-      
-    }
+  }
 
 private:
-    /*
-     *
-     */
-    void draw(vector<float> data, vec3 color) {
-        // glDrawArrays(GL_LINES, 0, data.size() / 3);
+  /*
+   *
+   */
+  void draw(vector<float> data, vec3 color) {
+    // glDrawArrays(GL_LINES, 0, data.size() / 3);
 
+  }
+
+  /*
+   *
+   */
+  static void setVertexAttrs(GLuint index, GLint size, GLenum type,
+                             GLboolean normalized, GLsizei stride,
+                             const void *pointer) {
+    glVertexAttribPointer(index, size, type, normalized, stride, pointer);
+    glEnableVertexAttribArray(index);
+  }
+
+  /*
+   *
+   */
+  void initialiseWindow() {
+    // glfw: initialize and configure
+    glfwInit();
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
+    if (strcmp(PLATFORM, "APPLE") == 0) {
+      glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
     }
 
-
-    /*
-     *
-     */
-    static void setVertexAttrs(GLuint index, GLint size, GLenum type,
-                               GLboolean normalized, GLsizei stride,
-                               const void *pointer) {
-        glVertexAttribPointer(index, size, type, normalized, stride, pointer);
-        glEnableVertexAttribArray(index);
-    }
-
-    /*
-     *
-     */
-    void initialiseWindow() {
-        // glfw: initialize and configure
-        glfwInit();
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
-        if (IS_APPLE) {
-            glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-        }
-
-        // glfw window creation
-        window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "Graph", nullptr, nullptr);
-        if (window == nullptr) {
-            std::cout << "Failed to create GLFW createWindow" << std::endl;
-            glfwTerminate();
-            exit(1);
-        }
-
-        glfwMakeContextCurrent(window);
-        glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-        glfwSetCursorPosCallback(window, Camera::mouseCallback);
-        glfwSetScrollCallback(window, Camera::scrollCallback);
-
-        //        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-
-        if (!gladLoadGLLoader((GLADloadproc) glfwGetProcAddress)) {
-            std::cout << "Failed to initialize GLAD" << std::endl;
-            exit(1);
-        }
-
-        glEnable(GL_DEPTH_TEST);
-    }
-
-    /*
-     *
-     */
-    static void framebuffer_size_callback(GLFWwindow *window, int width,
-                                          int height) {
-        glViewport(0, 0, width, height);
-    }
-
-    /*
-     *
-     */
-    void close() const {
-      geometry->destroy();
+    // glfw window creation
+    window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "Graph", nullptr, nullptr);
+    if (window == nullptr) {
+      std::cout << "Failed to create GLFW createWindow" << std::endl;
       glfwTerminate();
+      exit(1);
     }
+
+    glfwMakeContextCurrent(window);
+    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+    glfwSetCursorPosCallback(window, Camera::mouseCallback);
+    glfwSetScrollCallback(window, Camera::scrollCallback);
+
+//        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    if (!gladLoadGLLoader((GLADloadproc) glfwGetProcAddress)) {
+      std::cout << "Failed to initialize GLAD" << std::endl;
+      exit(1);
+    }
+
+    glEnable(GL_DEPTH_TEST);
+  }
+
+  /*
+   *
+   */
+  static void framebuffer_size_callback(GLFWwindow *window, int width, int height) {
+    glViewport(0, 0, width, height);
+  }
+
+  /*
+   *
+   */
+  void close() const {
+    geometry->destroy();
+    glfwTerminate();
+  }
 };
 
 #endif //GRAPHICS_APP_H

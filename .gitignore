@@ -6,4 +6,3 @@
 !.vscode/extensions.json
 .history/*
 .DS_Store
-CMakeLists.txt
