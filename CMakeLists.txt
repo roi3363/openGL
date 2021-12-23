@@ -9,15 +9,15 @@ if (APPLE)
 elseif(UNIX)
     set(GLFW_H /usr/include/GLFW/)
 endif()
-include_directories(include ${GLFW_H} ${ASSIMP_H})
+include_directories(include ${GLFW_H})
 
 # Add target link
 if (APPLE)
     set(GLFW_LINK /usr/local/Cellar/glfw/3.3.5/lib/libglfw.3.dylib)
-    link_libraries(${GLFW_LINK} ${ASSIMP_LINK})
+    link_libraries(${GLFW_LINK} )
 elseif(UNIX)
     set(GLFW_LINK /usr/lib/x86_64-linux-gnu/libglfw.so)
-    link_libraries(${GLFW_LINK} ${CMAKE_DL_LIBS} ${ASSIMP_LINK})
+    link_libraries(${GLFW_LINK} ${CMAKE_DL_LIBS} )
 endif()
 
 
