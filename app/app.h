@@ -1,6 +1,8 @@
 #ifndef GRAPHICS_APP_H
 #define GRAPHICS_APP_H
 
+
+
 // sys libraries
 #include <iterator>
 #include <string>
@@ -18,29 +20,30 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/string_cast.hpp>
 #include <glm/ext.hpp>
-// App files
 
+// Namespaces
 using glm::mat4;
 using glm::vec3;
 using glm::radians;
 using glm::lookAt;
 using std::vector;
-using glm::mat4;
 using std::string;
 
+// App files
 #include "shader.h"
 #include "camera.h"
 #include "geometry.h"
 
+
+
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
+const int SCR_WIDTH = 800;
+const int SCR_HEIGHT = 600;
 
 class App {
-  const int SCR_WIDTH = 1920;
-  const int SCR_HEIGHT = 1080;
   Geometry *geometry;
   GLFWwindow *window{};
-
   mat4 model = mat4(1.0f);
 
 public:
@@ -52,13 +55,9 @@ public:
         -1.0f, -1.0f, 0.0f, // bottom left
         -1.0f, 1.0f, 0.0f  // top left
     };
-
-    unsigned int indices[] = {0, 3, 2, 0, 2, 1};
-
+    GLuint indices[] = {0, 3, 2, 0, 2, 1};
     geometry = new Geometry(vertices, sizeof(vertices), indices, sizeof(indices));
   }
-
-  void printVec(vec3 vec) { printf("%f %f %f\n", vec.x, vec.y, vec.z); }
 
   /*
    *
@@ -83,38 +82,11 @@ public:
     close();
   }
 
-  /*
-   *
-   */
-  void setup() {
-    // bind the Vertex Array Object first, then bind and set vertex buffer(s), and then configure vertex attributes(s).
-
-  }
-
 private:
   /*
    *
    */
-  void draw(vector<float> data, vec3 color) {
-    // glDrawArrays(GL_LINES, 0, data.size() / 3);
-
-  }
-
-  /*
-   *
-   */
-  static void setVertexAttrs(GLuint index, GLint size, GLenum type,
-                             GLboolean normalized, GLsizei stride,
-                             const void *pointer) {
-    glVertexAttribPointer(index, size, type, normalized, stride, pointer);
-    glEnableVertexAttribArray(index);
-  }
-
-  /*
-   *
-   */
   void initialiseWindow() {
-    // glfw: initialize and configure
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -124,7 +96,6 @@ private:
       glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
     }
 
-    // glfw window creation
     window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "Graph", nullptr, nullptr);
     if (window == nullptr) {
       std::cout << "Failed to create GLFW createWindow" << std::endl;
