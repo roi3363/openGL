@@ -20,6 +20,7 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/string_cast.hpp>
 #include <glm/ext.hpp>
+#include <libc.h>
 
 // Namespaces
 using glm::mat4;
@@ -56,7 +57,13 @@ public:
         -1.0f, 1.0f, 0.0f  // top left
     };
     GLuint indices[] = {0, 3, 2, 0, 2, 1};
-    geometry = new Geometry(vertices, sizeof(vertices), indices, sizeof(indices));
+    float points[] = {
+        0.0f,  1.0f,
+        0.0f,  -1.0f,
+//        1.0f,  0.0f,
+//        -1.0f,  0.0f,
+    };
+    geometry = new Geometry(points, sizeof(points), indices, sizeof(indices));
   }
 
   /*
@@ -70,7 +77,8 @@ public:
       lastFrame = currentFrame;
 
       Camera::processInput(window);
-
+      geometry->shader->reload();
+      usleep(200000);
       glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
       glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 

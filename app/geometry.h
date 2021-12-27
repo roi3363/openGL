@@ -10,12 +10,13 @@ class Geometry {
   Shader *shader;
 
   Geometry(float vertices[], int verticesSize, unsigned int indices[], int indicesSize){
-    shader = new Shader("assets/shaders/vertex.frag", "assets/shaders/fragment.frag");
+    shader = new Shader("assets/shaders/v.shader", "assets/shaders/f.shader", "assets/shaders/g.shader");
 
     genBuffers();
     bindVBO(verticesSize, vertices);
-    bindEBO(indicesSize, indices);
-    setVertexAttrs(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *)0);
+//    bindEBO(indicesSize, indices);
+    setVertexAttrs(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), nullptr);
+//    setVertexAttrs(1, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(2 * sizeof(float)));
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
@@ -26,7 +27,7 @@ class Geometry {
   void genBuffers() {
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
-    glGenBuffers(1, &EBO);
+//    glGenBuffers(1, &EBO);
 
     glBindVertexArray(VAO);
   }
@@ -34,8 +35,7 @@ class Geometry {
  /*
  *
  */
-  static void setVertexAttrs(GLuint index, GLint size, GLenum type,
-                             GLboolean normalized, GLsizei stride,
+  static void setVertexAttrs(GLuint index, GLint size, GLenum type, GLboolean normalized, GLsizei stride,
                              const void *pointer) {
     glVertexAttribPointer(index, size, type, normalized, stride, pointer);
     glEnableVertexAttribArray(index);
@@ -45,9 +45,10 @@ class Geometry {
   void draw(mat4 model) {
     shader->use();
     glBindVertexArray(VAO);
-    shader->setMat4("model", model);
     // fix 6
-    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+//    glDrawArrays(GL_POINTS, 0, 4);
+    glDrawArrays(GL_LINES, 0, 4);
+//    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
   }
 
   /*
@@ -69,8 +70,7 @@ class Geometry {
   void destroy() const {
     glDeleteVertexArrays(1, &VAO);
     glDeleteBuffers(1, &VBO);
-    glDeleteBuffers(1, &EBO);
-
+//    glDeleteBuffers(1, &EBO);
     delete shader;
   }
 };

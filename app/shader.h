@@ -4,30 +4,53 @@
 class Shader {
 public:
   GLuint ID;
+  string vertexPath;
+  string fragmentPath;
+  string geometryPath;
 
-  Shader(const char *vertexPath,
-         const char *fragmentPath,
-         const char *geometryPath = nullptr) {
+  Shader(const string vertexPath,
+         const string fragmentPath,
+         const string geometryPath = nullptr)
+         : vertexPath{vertexPath}, fragmentPath{fragmentPath} {
+    if (!geometryPath.empty()) {
+      this->geometryPath = geometryPath;
+    }
+    loadShaders();
+  }
 
+  void reload() {
+    glDeleteProgram(ID);
+    loadShaders();
+  }
+
+  void loadShaders() {
     const string &vShaderCode = getShaderCode(vertexPath);
+    string gShaderCode;
+    if (!geometryPath.empty()) {
+      gShaderCode = getShaderCode(geometryPath);
+    }
     const string &fShaderCode = getShaderCode(fragmentPath);
 
     GLuint vertex = compileShader(GL_VERTEX_SHADER, vShaderCode.c_str());
+    GLuint geometry;
+    if (!geometryPath.empty()) {
+      geometry = compileShader(GL_GEOMETRY_SHADER, gShaderCode.c_str());
+    }
     GLuint fragment = compileShader(GL_FRAGMENT_SHADER, fShaderCode.c_str());
 
-    if (geometryPath) {
-      const string &gShaderCode = getShaderCode(geometryPath);
-      GLuint geometry = compileShader(GL_GEOMETRY_SHADER, gShaderCode.c_str());
-      glAttachShader(ID, geometry);
-    }
 
     ID = glCreateProgram();
     glAttachShader(ID, vertex);
+    if (!geometryPath.empty()) {
+      glAttachShader(ID, geometry);
+    }
     glAttachShader(ID, fragment);
     glLinkProgram(ID);
     checkCompileErrors(ID, "program");
     glDeleteShader(vertex);
-    //glDeleteShader(geometry);
+    if (geometry) {
+      glDeleteShader(geometry);
+    }
     glDeleteShader(fragment);
   }
 
@@ -88,7 +111,7 @@ private:
   /*
    *
    */
-  static string getShaderCode(const char *path) {
+  static string getShaderCode(const string path) {
     std::ifstream file;
     std::stringstream shaderStream;
     file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
