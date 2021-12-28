@@ -2,7 +2,7 @@
 #define GRAPHICS_GEOMETRY_H
 
 class Geometry {
- public:
+public:
   GLuint VAO{};
   GLuint VBO{};
   GLuint EBO{};
@@ -11,15 +11,17 @@ class Geometry {
 
   Shader *shader;
 
-  Geometry(vector<float> vertices, const char* vsPath, const char* gsPath, const char* fsPath){
-    shader = new Shader(vsPath,fsPath, gsPath);
+  Geometry(vector<float> vertices, const char *vsPath, const char *gsPath,
+           const char *fsPath) {
+    shader = new Shader(vsPath, fsPath, gsPath);
     this->verticesSize = vertices.size() * sizeof(float);
     this->vertices = vertices;
     genBuffers();
     bindVBO(verticesSize, vertices.data());
-//    bindEBO(indicesSize, indices);
+    //    bindEBO(indicesSize, indices);
     setVertexAttrs(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), nullptr);
-//    setVertexAttrs(1, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(2 * sizeof(float)));
+    //    setVertexAttrs(1, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(2
+    //    * sizeof(float)));
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
@@ -30,20 +32,20 @@ class Geometry {
   void genBuffers() {
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
-//    glGenBuffers(1, &EBO);
+    //    glGenBuffers(1, &EBO);
 
     glBindVertexArray(VAO);
   }
 
- /*
- *
- */
-  static void setVertexAttrs(GLuint index, GLint size, GLenum type, GLboolean normalized, GLsizei stride,
+  /*
+   *
+   */
+  static void setVertexAttrs(GLuint index, GLint size, GLenum type,
+                             GLboolean normalized, GLsizei stride,
                              const void *pointer) {
     glVertexAttribPointer(index, size, type, normalized, stride, pointer);
     glEnableVertexAttribArray(index);
   }
-
 
   void drawPoints(mat4 model) {
     shader->use();
@@ -76,9 +78,9 @@ class Geometry {
   void destroy() const {
     glDeleteVertexArrays(1, &VAO);
     glDeleteBuffers(1, &VBO);
-//    glDeleteBuffers(1, &EBO);
+    //    glDeleteBuffers(1, &EBO);
     delete shader;
   }
 };
 
-#endif //GRAPHICS_GEOMETRY_H
+#endif // GRAPHICS_GEOMETRY_H
