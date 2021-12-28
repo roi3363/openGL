@@ -35,8 +35,6 @@ using std::string;
 #include "camera.h"
 #include "geometry.h"
 
-
-
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 const int SCR_WIDTH = 800;
@@ -44,6 +42,7 @@ const int SCR_HEIGHT = 600;
 
 class App {
   Geometry *geometry;
+  Geometry *geometry2;
   GLFWwindow *window{};
   mat4 model = mat4(1.0f);
 
@@ -57,13 +56,37 @@ public:
         -1.0f, 1.0f, 0.0f  // top left
     };
     GLuint indices[] = {0, 3, 2, 0, 2, 1};
-    float points[] = {
-        0.0f,  1.0f,
-        0.0f,  -1.0f,
+    vector<float> points = {
+        0.0f, 0.0f,
+//        0.0f,  -1.0f,
 //        1.0f,  0.0f,
 //        -1.0f,  0.0f,
     };
-    geometry = new Geometry(points, sizeof(points), indices, sizeof(indices));
+    vector<float> points2 = {
+        -1.00f, 1.00f,
+        -0.90f, 0.81f,
+        -0.80f, 0.64f,
+        -0.70f, 0.49f,
+        -0.60f, 0.36f,
+        -0.50f, 0.25f,
+        -0.40f, 0.16f,
+        -0.30f, 0.09f,
+        -0.20f, 0.04f,
+        -0.10f, 0.01f,
+        0.00f, 0.00f,
+        0.10f, 0.01f,
+        0.20f, 0.04f,
+        0.30f, 0.09f,
+        0.40f, 0.16f,
+        0.50f, 0.25f,
+        0.60f, 0.36f,
+        0.70f, 0.49f,
+        0.80f, 0.64f,
+        0.90f, 0.81f,
+        1.00f, 1.00f,
+    };
+    geometry = new Geometry(points, "assets/shaders/v.shader", "assets/shaders/g.shader", "assets/shaders/f.shader");
+    geometry2 = new Geometry(points2, "assets/shaders/v2.shader", "assets/shaders/g2.shader", "assets/shaders/f2.shader");
   }
 
   /*
@@ -78,12 +101,18 @@ public:
 
       Camera::processInput(window);
       geometry->shader->reload();
-      usleep(200000);
+      geometry2->shader->reload();
+      usleep(100000);
       glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
       glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
       // make call to draw
-      geometry->draw(model);
+      if (geometry->VBO != 0) {
+        geometry->drawPoints(model);
+      }
+      if (geometry2->VBO != 0) {
+        geometry2->drawLines(model);
+      }
       glfwSwapBuffers(window);
       glfwPollEvents();
     }

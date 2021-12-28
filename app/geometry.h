@@ -6,14 +6,17 @@ class Geometry {
   GLuint VAO{};
   GLuint VBO{};
   GLuint EBO{};
+  int verticesSize;
+  vector<float> vertices;
 
   Shader *shader;
 
-  Geometry(float vertices[], int verticesSize, unsigned int indices[], int indicesSize){
-    shader = new Shader("assets/shaders/v.shader", "assets/shaders/f.shader", "assets/shaders/g.shader");
-
+  Geometry(vector<float> vertices, const char* vsPath, const char* gsPath, const char* fsPath){
+    shader = new Shader(vsPath,fsPath, gsPath);
+    this->verticesSize = vertices.size() * sizeof(float);
+    this->vertices = vertices;
     genBuffers();
-    bindVBO(verticesSize, vertices);
+    bindVBO(verticesSize, vertices.data());
 //    bindEBO(indicesSize, indices);
     setVertexAttrs(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), nullptr);
 //    setVertexAttrs(1, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(2 * sizeof(float)));
@@ -42,13 +45,16 @@ class Geometry {
   }
 
 
-  void draw(mat4 model) {
+  void drawPoints(mat4 model) {
     shader->use();
     glBindVertexArray(VAO);
-    // fix 6
-//    glDrawArrays(GL_POINTS, 0, 4);
-    glDrawArrays(GL_LINES, 0, 4);
-//    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+    glDrawArrays(GL_POINTS, 0, vertices.size() / 2);
+  }
+
+  void drawLines(mat4 model) {
+    shader->use();
+    glBindVertexArray(VAO);
+    glDrawArrays(GL_LINE_STRIP, 0, vertices.size() / 2);
   }
 
   /*
