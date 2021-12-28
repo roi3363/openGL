@@ -107,13 +107,10 @@ public:
       glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
       glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-      // make call to draw
-      if (axisGeometry->VBO != 0) {
-        axisGeometry->drawPoints(model);
-      }
-      if (functionGeometry->VBO != 0) {
-        functionGeometry->drawLines(model);
-      }
+
+      axisGeometry->draw(model, GL_POINTS);
+      functionGeometry->draw(model, GL_LINE_STRIP);
+
       glfwSwapBuffers(window);
       glfwPollEvents();
     }

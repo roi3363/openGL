@@ -13,10 +13,10 @@ void set_position(vec4 position, vec4 line_normal, float thickness){
 void draw_line(vec4 position1, vec4 position2) {
   vec4 line_direction = normalize(position2 - position1);
   vec4 line_normal = vec4(-line_direction.y, line_direction.x, line_direction.zw);
-  float THICKNESS = 0.02;
+  float THICKNESS = 0.01;
   
-  set_position(position1, line_normal, THICKNESS);
-  set_position(position2, line_normal, THICKNESS);
+  set_position(position1 - 0.01 * line_direction, line_normal, THICKNESS);
+  set_position(position2 + 0.01 * line_direction, line_normal, THICKNESS);
   EndPrimitive();
 }
 

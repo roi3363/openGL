@@ -1,6 +1,7 @@
 #ifndef GRAPHICS_GEOMETRY_H
 #define GRAPHICS_GEOMETRY_H
 
+#include <string>
 class Geometry {
 public:
   GLuint VAO{};
@@ -47,16 +48,11 @@ public:
     glEnableVertexAttribArray(index);
   }
 
-  void drawPoints(mat4 model) {
-    shader->use();
-    glBindVertexArray(VAO);
-    glDrawArrays(GL_POINTS, 0, vertices.size() / 2);
-  }
 
-  void drawLines(mat4 model) {
+  void draw(mat4 model, GLenum primitive) {
     shader->use();
     glBindVertexArray(VAO);
-    glDrawArrays(GL_LINE_STRIP, 0, vertices.size() / 2);
+    glDrawArrays(primitive, 0, vertices.size() / 2);
   }
 
   /*
