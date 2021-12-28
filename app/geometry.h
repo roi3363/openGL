@@ -1,7 +1,6 @@
 #ifndef GRAPHICS_GEOMETRY_H
 #define GRAPHICS_GEOMETRY_H
 
-#include <string>
 class Geometry {
 public:
   GLuint VAO{};
@@ -47,7 +46,6 @@ public:
     glVertexAttribPointer(index, size, type, normalized, stride, pointer);
     glEnableVertexAttribArray(index);
   }
-
 
   void draw(mat4 model, GLenum primitive) {
     shader->use();
