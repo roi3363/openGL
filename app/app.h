@@ -20,7 +20,7 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/string_cast.hpp>
 #include <glm/ext.hpp>
-#include <libc.h>
+#include <unistd.h>
 
 // Namespaces
 using glm::mat4;
@@ -41,8 +41,8 @@ const int SCR_WIDTH = 800;
 const int SCR_HEIGHT = 600;
 
 class App {
-  Geometry *geometry;
-  Geometry *geometry2;
+  Geometry *axisGeometry;
+  Geometry *functionGeometry;
   GLFWwindow *window{};
   mat4 model = mat4(1.0f);
 
@@ -56,13 +56,8 @@ public:
         -1.0f, 1.0f, 0.0f  // top left
     };
     GLuint indices[] = {0, 3, 2, 0, 2, 1};
-    vector<float> points = {
-        0.0f, 0.0f,
-//        0.0f,  -1.0f,
-//        1.0f,  0.0f,
-//        -1.0f,  0.0f,
-    };
-    vector<float> points2 = {
+    vector<float> axisCenter = { 0.0f, 0.0f };
+    vector<float> functionPoints = {
         -1.00f, 1.00f,
         -0.90f, 0.81f,
         -0.80f, 0.64f,
@@ -85,8 +80,14 @@ public:
         0.90f, 0.81f,
         1.00f, 1.00f,
     };
-    geometry = new Geometry(points, "assets/shaders/v.vert", "assets/shaders/g.geom", "assets/shaders/f.frag");
-    geometry2 = new Geometry(points2, "assets/shaders/v2.vert", "assets/shaders/g2.geom", "assets/shaders/f2.frag");
+    axisGeometry = new Geometry(axisCenter,
+				"assets/shaders/axis.vert",
+				"assets/shaders/axis.geom",
+				"assets/shaders/axis.frag");
+    functionGeometry = new Geometry(functionPoints,
+				    "assets/shaders/func.vert",
+				    "assets/shaders/func.geom",
+				    "assets/shaders/func.frag");
   }
 
   /*
@@ -100,18 +101,18 @@ public:
       lastFrame = currentFrame;
 
       Camera::processInput(window);
-      geometry->shader->reload();
-      geometry2->shader->reload();
+      axisGeometry->shader->reload();
+      functionGeometry->shader->reload();
       usleep(100000);
       glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
       glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
       // make call to draw
-      if (geometry->VBO != 0) {
-        geometry->drawPoints(model);
+      if (axisGeometry->VBO != 0) {
+        axisGeometry->drawPoints(model);
       }
-      if (geometry2->VBO != 0) {
-        geometry2->drawLines(model);
+      if (functionGeometry->VBO != 0) {
+        functionGeometry->drawLines(model);
       }
       glfwSwapBuffers(window);
       glfwPollEvents();
@@ -165,7 +166,8 @@ private:
    *
    */
   void close() const {
-    geometry->destroy();
+    axisGeometry->destroy();
+    functionGeometry->destroy();
     glfwTerminate();
   }
 };
