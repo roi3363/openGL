@@ -85,8 +85,8 @@ public:
         0.90f, 0.81f,
         1.00f, 1.00f,
     };
-    geometry = new Geometry(points, "assets/shaders/v.shader", "assets/shaders/g.shader", "assets/shaders/f.shader");
-    geometry2 = new Geometry(points2, "assets/shaders/v2.shader", "assets/shaders/g2.shader", "assets/shaders/f2.shader");
+    geometry = new Geometry(points, "assets/shaders/v.vert", "assets/shaders/g.geom", "assets/shaders/f.frag");
+    geometry2 = new Geometry(points2, "assets/shaders/v2.vert", "assets/shaders/g2.geom", "assets/shaders/f2.frag");
   }
 
   /*
