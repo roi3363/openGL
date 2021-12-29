@@ -54,14 +54,7 @@ public:
     vector<float> axisCenter = {0.0f, 0.0f};
     vector<float> domain = {-6.0, 6.0};
     vector<float> functionPoints = getFunctionPoints(sinf, domain, 0.1);
-    //{
-    //            -1.00f, 1.00f,  -0.90f, 0.81f,  -0.80f, 0.64f,  -0.70f,
-    //            0.49f,  -0.60f, 0.36f,  -0.50f, 0.25f,  -0.40f, 0.16f,
-    //            -0.30f, 0.09f,  -0.20f, 0.04f,  -0.10f, 0.01f,  0.00f,
-    //            0.00f,  0.10f,  0.01f,  0.20f,  0.04f,  0.30f,  0.09f,
-    //            0.40f,  0.16f,  0.50f,  0.25f,  0.60f,  0.36f,  0.70f,
-    //            0.49f,  0.80f,  0.64f,  0.90f,  0.81f,  1.00f,  1.00f,
-    //        };
+
     axisGeometry =
         new Geometry(axisCenter, "assets/shaders/axis.vert",
                      "assets/shaders/axis.geom", "assets/shaders/axis.frag");
