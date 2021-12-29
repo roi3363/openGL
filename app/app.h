@@ -80,8 +80,8 @@ public:
       glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
       glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-      axisGeometry->draw(model, GL_POINTS);
-      functionGeometry->draw(model, GL_LINE_STRIP);
+      axisGeometry->draw(model, GL_POINTS, currentFrame);
+      functionGeometry->draw(model, GL_LINE_STRIP, currentFrame);
 
       glfwSwapBuffers(window);
       glfwPollEvents();
