@@ -47,8 +47,9 @@ public:
     glEnableVertexAttribArray(index);
   }
 
-  void draw(mat4 model, GLenum primitive) {
+  void draw(mat4 model, GLenum primitive, float time) {
     shader->use();
+    shader->setFloat("time", time);
     glBindVertexArray(VAO);
     glDrawArrays(primitive, 0, vertices.size() / 2);
   }
