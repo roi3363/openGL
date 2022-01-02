@@ -44,6 +44,7 @@ const int SCR_HEIGHT = 600;
 class App {
   Geometry *axisGeometry;
   Geometry *functionGeometry;
+  Geometry *derivativeGeometry;
   GLFWwindow *window{};
   mat4 model = mat4(1.0f);
 
@@ -54,34 +55,42 @@ public:
     vector<float> axisCenter = {0.0f, 0.0f};
     vector<float> domain = {-6.0, 6.0};
     vector<float> functionPoints = getFunctionPoints(sinf, domain, 0.1);
+    vector<float> derivativePoints = getFunctionPoints(sinf, domain, 0.1);
 
     axisGeometry =
-        new Geometry(axisCenter, "assets/shaders/axis.vert",
-                     "assets/shaders/axis.geom", "assets/shaders/axis.frag");
+        new Geometry(axisCenter, "assets/shaders/axis.vert", "assets/shaders/axis.geom", "assets/shaders/axis.frag");
     functionGeometry =
-        new Geometry(functionPoints, "assets/shaders/func.vert",
-                     "assets/shaders/func.geom", "assets/shaders/func.frag");
+        new Geometry(functionPoints,
+                     "assets/shaders/func.vert",
+                     "assets/shaders/func.geom",
+                     "assets/shaders/func.frag");
+    derivativeGeometry =
+        new Geometry(derivativePoints,
+                     "assets/shaders/derivative.vert",
+                     "assets/shaders/derivative.geom",
+                     "assets/shaders/derivative.frag");
   }
 
   /*
    *
    */
   void run() {
-
     while (!glfwWindowShouldClose(window)) {
-      float currentFrame = glfwGetTime();
+      auto currentFrame = (float) glfwGetTime();
       deltaTime = currentFrame - lastFrame;
       lastFrame = currentFrame;
 
       Camera::processInput(window);
       axisGeometry->shader->reload();
       functionGeometry->shader->reload();
+      derivativeGeometry->shader->reload();
       usleep(100000);
       glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
       glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-      axisGeometry->draw(model, GL_POINTS, currentFrame);
-      functionGeometry->draw(model, GL_LINE_STRIP, currentFrame);
+      axisGeometry->draw(model, GL_POINTS, currentFrame * 0.5f);
+      functionGeometry->draw(model, GL_LINE_STRIP, currentFrame * 0.5f);
+      derivativeGeometry->draw(model, GL_LINES, currentFrame * 0.5f);
 
       glfwSwapBuffers(window);
       glfwPollEvents();
@@ -116,7 +125,7 @@ private:
     glfwSetScrollCallback(window, Camera::scrollCallback);
 
     //        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
+    if (!gladLoadGLLoader((GLADloadproc) glfwGetProcAddress)) {
       std::cout << "Failed to initialize GLAD" << std::endl;
       exit(1);
     }
@@ -142,9 +151,9 @@ private:
     float domainMax = std::max(abs(domain[0]), abs(domain[1]));
 
     std::for_each(functionHeights.begin(), functionHeights.end(), [&heightMax](float &el){
-      el *= 1.0 / heightMax; });
+      el *= 1.0f / heightMax; });
     std::for_each(functionSteps.begin(), functionSteps.end(), [&domainMax](float &el){
-      el *= 1.0 / domainMax; });
+      el *= 1.0f / domainMax; });
 
     vector<float> functionPoints = {};
 
