@@ -136,24 +136,26 @@ private:
   vector<float> getFunctionPoints(std::function<float(float)> func,
                                   vector<float> domain, float stepSize) {
     vector<float> functionHeights = {};
+    vector<float> functionAbsHeights = {};
     vector<float> functionSteps = {};
     float step = domain[0];
 
     while (step < domain[1]) {
       functionSteps.push_back(step);
       functionHeights.push_back(func(step));
+      functionAbsHeights.push_back(abs(func(step)));
 
       step += stepSize;
     }
 
     float heightMax =
-        *std::max_element(functionHeights.begin(), functionHeights.end());
+        *std::max_element(functionAbsHeights.begin(), functionAbsHeights.end());
     float domainMax = std::max(abs(domain[0]), abs(domain[1]));
 
     std::for_each(functionHeights.begin(), functionHeights.end(), [&heightMax](float &el){
-      el *= 1.0f / heightMax; });
+      el *= 1.0f / (heightMax + 2.0f); });
     std::for_each(functionSteps.begin(), functionSteps.end(), [&domainMax](float &el){
-      el *= 1.0f / domainMax; });
+      el *= 1.0f / (domainMax + 1.0f); });
 
     vector<float> functionPoints = {};
 
