@@ -2,30 +2,26 @@
 #define GRAPHICS_GEOMETRY_H
 
 class Geometry {
- public:
+public:
   GLuint VAO{};
   GLuint VBO{};
   GLuint EBO{};
+  int verticesSize;
+  vector<float> vertices;
 
   Shader *shader;
 
-  Geometry(float vertices[], int verticesSize, unsigned int indices[], int indicesSize){
-    shader = new Shader("assets/shaders/vertex.frag", "assets/shaders/fragment.frag");
-
-    glGenVertexArrays(1, &VAO);
-    glGenBuffers(1, &VBO);
-    glGenBuffers(1, &EBO);
-
-    glBindVertexArray(VAO);
-
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, verticesSize, vertices, GL_STATIC_DRAW);
-
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indicesSize, indices, GL_STATIC_DRAW);
-
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *)0);
-    glEnableVertexAttribArray(0);
+  Geometry(vector<float> vertices, const char *vsPath, const char *gsPath,
+           const char *fsPath) {
+    shader = new Shader(vsPath, fsPath, gsPath);
+    this->verticesSize = vertices.size() * sizeof(float);
+    this->vertices = vertices;
+    genBuffers();
+    bindVBO(verticesSize, vertices.data());
+    //    bindEBO(indicesSize, indices);
+    setVertexAttrs(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), nullptr);
+    //    setVertexAttrs(1, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(2
+    //    * sizeof(float)));
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
@@ -33,32 +29,53 @@ class Geometry {
     glUseProgram(shader->ID);
   }
 
-  
-  void draw(mat4 model) {
-    shader->use();
+  void genBuffers() {
+    glGenVertexArrays(1, &VAO);
+    glGenBuffers(1, &VBO);
+    //    glGenBuffers(1, &EBO);
+
     glBindVertexArray(VAO);
-
-    shader->setMat4("model", model);
-
-    // fix 6
-    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
   }
 
   /*
    *
    */
-  void bindEBO(GLuint data[], int dataSize) const {
+  static void setVertexAttrs(GLuint index, GLint size, GLenum type,
+                             GLboolean normalized, GLsizei stride,
+                             const void *pointer) {
+    glVertexAttribPointer(index, size, type, normalized, stride, pointer);
+    glEnableVertexAttribArray(index);
+  }
+
+  void draw(mat4 model, GLenum primitive, float time) {
+    shader->use();
+    shader->setFloat("time", time);
+    glBindVertexArray(VAO);
+    glDrawArrays(primitive, 0, vertices.size() / 2);
+  }
+
+  /*
+   *
+   */
+  void bindEBO(int dataSize, GLuint data[]) const {
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, dataSize, data, GL_STATIC_DRAW);
+  }
+
+  /*
+   *
+   */
+  void bindVBO(int dataSize, GLfloat data[]) const {
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, dataSize, data, GL_STATIC_DRAW);
   }
 
   void destroy() const {
     glDeleteVertexArrays(1, &VAO);
     glDeleteBuffers(1, &VBO);
-    glDeleteBuffers(1, &EBO);
-
+    //    glDeleteBuffers(1, &EBO);
     delete shader;
   }
 };
 
-#endif //GRAPHICS_GEOMETRY_H
+#endif // GRAPHICS_GEOMETRY_H

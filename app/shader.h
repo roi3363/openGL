@@ -4,31 +4,51 @@
 class Shader {
 public:
   GLuint ID;
+  string vsPath;
+  string fsPath;
+  string gsPath;
+  GLuint vs;
+  GLuint gs;
+  GLuint fs;
+  const char *lastVsCode = "";
+  const char *lastGsCode = "";
+  const char *lastFsCode = "";
 
-  Shader(const char *vertexPath,
-         const char *fragmentPath,
-         const char *geometryPath = nullptr) {
-
-    const string &vShaderCode = getShaderCode(vertexPath);
-    const string &fShaderCode = getShaderCode(fragmentPath);
-
-    GLuint vertex = compileShader(GL_VERTEX_SHADER, vShaderCode.c_str());
-    GLuint fragment = compileShader(GL_FRAGMENT_SHADER, fShaderCode.c_str());
-
-    if (geometryPath) {
-      const string &gShaderCode = getShaderCode(geometryPath);
-      GLuint geometry = compileShader(GL_GEOMETRY_SHADER, gShaderCode.c_str());
-      glAttachShader(ID, geometry);
+  Shader(const string vsPath,
+         const string fsPath,
+         const string gsPath = nullptr)
+      : vsPath{vsPath}, fsPath{fsPath} {
+    if (!gsPath.empty()) {
+      this->gsPath = gsPath;
     }
+    loadShaders();
+  }
+
+  void reload() {
+    glDeleteProgram(ID);
+    loadShaders();
+  }
+
+  void loadShaders() {
+    compileShader(GL_VERTEX_SHADER, vsPath);
+    if (!gsPath.empty()) {
+      compileShader(GL_GEOMETRY_SHADER, gsPath);
+    }
+    compileShader(GL_FRAGMENT_SHADER, fsPath);
 
     ID = glCreateProgram();
-    glAttachShader(ID, vertex);
-    glAttachShader(ID, fragment);
+    glAttachShader(ID, vs);
+    if (!gsPath.empty()) {
+      glAttachShader(ID, gs);
+    }
+    glAttachShader(ID, fs);
     glLinkProgram(ID);
-    checkCompileErrors(ID, "program");
-    glDeleteShader(vertex);
-    //glDeleteShader(geometry);
-    glDeleteShader(fragment);
+    checkCompilationErrors(ID, "program");
+    glDeleteShader(vs);
+    if (gs) {
+      glDeleteShader(gs);
+    }
+    glDeleteShader(fs);
   }
 
   /*
@@ -77,18 +97,29 @@ private:
   /*
    *
    */
-  static GLuint compileShader(const GLenum type, const char *shaderCode) {
+  void compileShader(const GLenum type, string shaderPath) {
+    const char *shaderCode = getShaderCode(shaderPath);
+    if (type == GL_VERTEX_SHADER) {
+      vs = createShader(type, "Vertex Shader", shaderCode);
+    } else if (type == GL_GEOMETRY_SHADER) {
+      gs = createShader(type, "Geometry Shader", shaderCode);
+    } else if (type == GL_FRAGMENT_SHADER) {
+      fs = createShader(type, "Fragment Shader", shaderCode);
+    }
+  }
+
+  GLuint createShader(const GLenum type, const char *typeStr, const char *shaderCode) {
     GLuint shader = glCreateShader(type);
     glShaderSource(shader, 1, &shaderCode, nullptr);
     glCompileShader(shader);
-    checkCompileErrors(shader, "shader");
+    checkCompilationErrors(shader, typeStr);
     return shader;
   }
 
   /*
    *
    */
-  static string getShaderCode(const char *path) {
+  static const char *getShaderCode(const string path) {
     std::ifstream file;
     std::stringstream shaderStream;
     file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
@@ -100,20 +131,20 @@ private:
     catch (std::ifstream::failure &e) {
       std::cout << "File '" << path << "' could not be read." << std::endl;
     }
-    return shaderStream.str();
+    return strdup(shaderStream.str().c_str());
   }
 
   /*
    *
    */
-  static void checkCompileErrors(unsigned int shader, const string &type) {
+  static void checkCompilationErrors(unsigned int shader, const string &type) {
     int success;
     char infoLog[1024];
     if (type != "program") {
       glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
       if (!success) {
         glGetShaderInfoLog(shader, 1024, nullptr, infoLog);
-        std::cout << "Shader compilation error of type: " << type << "\n" << infoLog << std::endl;
+        std::cout << "Compilation error of " << type << "\n" << infoLog << std::endl;
       }
     } else {
       glGetProgramiv(shader, GL_LINK_STATUS, &success);

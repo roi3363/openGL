@@ -2,117 +2,107 @@
 #define GRAPHICS_APP_H
 
 // sys libraries
-#include <iterator>
-#include <string>
+#include <algorithm>
+#include <cmath>
 #include <fstream>
-#include <sstream>
+#include <functional>
 #include <iostream>
+#include <iterator>
+#include <sstream>
+#include <string>
 #include <vector>
-#include "functional"
 // OpenGL
 #include <glad.h>
 #include <glfw3.h>
 // glm
+#include <glm/ext.hpp>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/string_cast.hpp>
-#include <glm/ext.hpp>
-// App files
+#include <unistd.h>
 
-using glm::mat4;
-using glm::vec3;
-using glm::radians;
+// Namespaces
 using glm::lookAt;
-using std::vector;
 using glm::mat4;
+using glm::radians;
+using glm::vec3;
 using std::string;
+using std::vector;
 
+// App files
 #include "shader.h"
 #include "camera.h"
 #include "geometry.h"
 
+
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
+const int SCR_WIDTH = 800;
+const int SCR_HEIGHT = 600;
 
 class App {
-  const int SCR_WIDTH = 1920;
-  const int SCR_HEIGHT = 1080;
-  Geometry *geometry;
+  Geometry *axisGeometry;
+  Geometry *functionGeometry;
+  Geometry *derivativeGeometry;
   GLFWwindow *window{};
-
   mat4 model = mat4(1.0f);
 
 public:
-  App() {
-    initialiseWindow();
-    float vertices[] = {
-        1.0f, 1.0f, 1.0f, // top right
-        1.0f, -1.0f, 0.0f, // bottom right
-        -1.0f, -1.0f, 0.0f, // bottom left
-        -1.0f, 1.0f, 0.0f  // top left
-    };
+  App() { initialiseWindow(); }
 
-    unsigned int indices[] = {0, 3, 2, 0, 2, 1};
+  void setup() {
+    vector<float> axisCenter = {0.0f, 0.0f};
+    vector<float> domain = {-6.0, 6.0};
+    vector<float> functionPoints = getFunctionPoints(sinf, domain, 0.1);
+    vector<float> derivativePoints = getFunctionPoints(sinf, domain, 0.1);
 
-    geometry = new Geometry(vertices, sizeof(vertices), indices, sizeof(indices));
+    axisGeometry =
+        new Geometry(axisCenter, "assets/shaders/axis.vert", "assets/shaders/axis.geom", "assets/shaders/axis.frag");
+    functionGeometry =
+        new Geometry(functionPoints,
+                     "assets/shaders/func.vert",
+                     "assets/shaders/func.geom",
+                     "assets/shaders/func.frag");
+    derivativeGeometry =
+        new Geometry(derivativePoints,
+                     "assets/shaders/derivative.vert",
+                     "assets/shaders/derivative.geom",
+                     "assets/shaders/derivative.frag");
   }
-
-  void printVec(vec3 vec) { printf("%f %f %f\n", vec.x, vec.y, vec.z); }
 
   /*
    *
    */
   void run() {
     while (!glfwWindowShouldClose(window)) {
-      float currentFrame = glfwGetTime();
+      auto currentFrame = (float) glfwGetTime();
       deltaTime = currentFrame - lastFrame;
       lastFrame = currentFrame;
 
       Camera::processInput(window);
-
+      axisGeometry->shader->reload();
+      functionGeometry->shader->reload();
+      derivativeGeometry->shader->reload();
+      usleep(100000);
       glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
       glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-      // make call to draw
-      geometry->draw(model);
+      axisGeometry->draw(model, GL_POINTS, currentFrame * 0.5f);
+      functionGeometry->draw(model, GL_LINE_STRIP, currentFrame * 0.5f);
+      derivativeGeometry->draw(model, GL_LINES, currentFrame * 0.5f);
+
       glfwSwapBuffers(window);
       glfwPollEvents();
     }
     close();
   }
 
-  /*
-   *
-   */
-  void setup() {
-    // bind the Vertex Array Object first, then bind and set vertex buffer(s),
-    // and then configure vertex attributes(s).
-  }
-
 private:
   /*
    *
    */
-  void draw(vector<float> data, vec3 color) {
-    // glDrawArrays(GL_LINES, 0, data.size() / 3);
-  }
-
-  /*
-   *
-   */
-  static void setVertexAttrs(GLuint index, GLint size, GLenum type,
-                             GLboolean normalized, GLsizei stride,
-                             const void *pointer) {
-    glVertexAttribPointer(index, size, type, normalized, stride, pointer);
-    glEnableVertexAttribArray(index);
-  }
-
-  /*
-   *
-   */
   void initialiseWindow() {
-    // glfw: initialize and configure
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -122,7 +112,6 @@ private:
       glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
     }
 
-    // glfw window creation
     window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "Graph", nullptr, nullptr);
     if (window == nullptr) {
       std::cout << "Failed to create GLFW createWindow" << std::endl;
@@ -136,7 +125,7 @@ private:
     glfwSetScrollCallback(window, Camera::scrollCallback);
 
     //        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
+    if (!gladLoadGLLoader((GLADloadproc) glfwGetProcAddress)) {
       std::cout << "Failed to initialize GLAD" << std::endl;
       exit(1);
     }
@@ -144,6 +133,37 @@ private:
     glEnable(GL_DEPTH_TEST);
   }
 
+  vector<float> getFunctionPoints(std::function<float(float)> func,
+                                  vector<float> domain, float stepSize) {
+    vector<float> functionHeights = {};
+    vector<float> functionSteps = {};
+    float step = domain[0];
+
+    while (step < domain[1]) {
+      functionSteps.push_back(step);
+      functionHeights.push_back(func(step));
+
+      step += stepSize;
+    }
+
+    float heightMax =
+        *std::max_element(functionHeights.begin(), functionHeights.end());
+    float domainMax = std::max(abs(domain[0]), abs(domain[1]));
+
+    std::for_each(functionHeights.begin(), functionHeights.end(), [&heightMax](float &el){
+      el *= 1.0f / heightMax; });
+    std::for_each(functionSteps.begin(), functionSteps.end(), [&domainMax](float &el){
+      el *= 1.0f / domainMax; });
+
+    vector<float> functionPoints = {};
+
+    for(int i = 0; i < functionSteps.size(); i++){
+      functionPoints.push_back(functionSteps[i]);
+      functionPoints.push_back(functionHeights[i]);
+    }
+
+    return functionPoints;
+  }
   /*
    *
    */
@@ -156,7 +176,8 @@ private:
    *
    */
   void close() const {
-    geometry->destroy();
+    axisGeometry->destroy();
+    functionGeometry->destroy();
     glfwTerminate();
   }
 };
