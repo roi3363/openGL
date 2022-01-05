@@ -57,13 +57,12 @@ public:
     vector<float> domain = {- 4.0f * M_PI, 4.0f * M_PI};
 
     // getting scaled parametrized curve values
-    vector<std::function<float(float)>> circle = {
+    vector<std::function<float(float)>> curve = {
       [](float time){ return cosf(2.0f * time) + sinf(0.5f * time);},
       [](float time){return sinf(2.0f * time) + 0.3 * sinf(0.5f * time);},
     };
-    
     vector<float> steps = getSteps(domain, 0.1f);
-    vector<float> curveValues = getParametrizedCurvePoints(circle, steps);
+    vector<float> curveValues = getParametrizedCurvePoints(curve, steps);
 
     // scale step afterwards
     float domainMax = std::max(abs(domain[0]), abs(domain[1]));
