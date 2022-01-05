@@ -54,10 +54,14 @@ public:
 
   void setup() {
     vector<float> axisCenter = {0.0f, 0.0f};
-    vector<float> domain = {- M_PI, M_PI};
+    vector<float> domain = {- 4.0f * M_PI, 4.0f * M_PI};
 
     // getting scaled parametrized curve values
-    vector<std::function<float(float)>> circle = {cosf, sinf};
+    vector<std::function<float(float)>> circle = {
+      [](float time){ return cosf(2.0f * time) + sinf(0.5f * time);},
+      [](float time){return sinf(2.0f * time) + 0.3 * sinf(0.5f * time);},
+    };
+    
     vector<float> steps = getSteps(domain, 0.1f);
     vector<float> curveValues = getParametrizedCurvePoints(circle, steps);
 
@@ -204,16 +208,14 @@ private:
 
   vector<float> getParametrizedCurvePoints(vector<std::function<float(float)>> curve,
 					   vector<float> steps) {
-
-    vector<float> values = {};
-
-    for(int i = 0; i < steps.size(); i++) {
-      for(int j = 0; j < curve.size(); j++){
-	values.push_back(curve[j](steps[i]));
-      }
+    vector<float> values[curve.size()];
+    
+    for(int j = 0; j < curve.size(); j++){
+      values[j] = getFunctionOnSteps(curve[j], steps);
     }
 
-    return values;
+    // this will need to be fixed for 3d I am lazy right now
+    return zipValuesWithSteps(values[0], values[1], 1);
   }
 
 
