@@ -8,6 +8,7 @@
 #include <functional>
 #include <iostream>
 #include <iterator>
+#include <math.h>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -43,7 +44,7 @@ const int SCR_HEIGHT = 600;
 
 class App {
   Geometry *axisGeometry;
-  Geometry *functionGeometry;
+  Geometry *curveGeometry;
   Geometry *derivativeGeometry;
   GLFWwindow *window{};
   mat4 model = mat4(1.0f);
@@ -53,22 +54,35 @@ public:
 
   void setup() {
     vector<float> axisCenter = {0.0f, 0.0f};
-    vector<float> domain = {-6.0, 6.0};
-    vector<float> functionPoints = getFunctionPoints(sinf, domain, 0.1);
-    vector<float> derivativePoints = getFunctionPoints(sinf, domain, 0.1);
+    vector<float> domain = {- M_PI, M_PI};
 
+    // getting scaled parametrized curve values
+    vector<std::function<float(float)>> circle = {cosf, sinf};
+    vector<float> steps = getSteps(domain, 0.1f);
+    vector<float> curveValues = getParametrizedCurvePoints(circle, steps);
+
+    // scale step afterwards
+    float domainMax = std::max(abs(domain[0]), abs(domain[1]));
+    std::for_each(steps.begin(), steps.end(), [&domainMax](float &el){
+	  el *= 1.0f / (domainMax + 1.0f); });
+
+    vector<float> curvePointsAndSteps = zipValuesWithSteps(steps, curveValues, 2);
+    
     axisGeometry =
-        new Geometry(axisCenter, "assets/shaders/axis.vert", "assets/shaders/axis.geom", "assets/shaders/axis.frag");
-    functionGeometry =
-        new Geometry(functionPoints,
-                     "assets/shaders/func.vert",
-                     "assets/shaders/func.geom",
-                     "assets/shaders/func.frag");
-    derivativeGeometry =
-        new Geometry(derivativePoints,
-                     "assets/shaders/derivative.vert",
-                     "assets/shaders/derivative.geom",
-                     "assets/shaders/derivative.frag");
+      new Geometry(axisCenter, "assets/shaders/axis.vert", "assets/shaders/axis.geom", "assets/shaders/axis.frag", 2);
+
+    axisGeometry->setVertexAttrs(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), nullptr);
+    
+    curveGeometry =  new Geometry(curvePointsAndSteps,
+				  "assets/shaders/curve.vert",
+				  "assets/shaders/curve.geom",
+				  "assets/shaders/curve.frag",
+				  3);
+    
+    curveGeometry->setVertexAttrs(0, 2, GL_FLOAT, GL_FALSE, 3 * sizeof(float), nullptr);
+    curveGeometry->setVertexAttrs(1, 1, GL_FLOAT, GL_FALSE, 3 * sizeof(float),
+				  (void*)(2* sizeof(float)));
+    
   }
 
   /*
@@ -82,15 +96,17 @@ public:
 
       Camera::processInput(window);
       axisGeometry->shader->reload();
-      functionGeometry->shader->reload();
-      derivativeGeometry->shader->reload();
+      curveGeometry->shader->reload();
+      //functionGeometry->shader->reload();
+      //derivativeGeometry->shader->reload();
       usleep(100000);
       glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
       glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
       axisGeometry->draw(model, GL_POINTS, currentFrame * 0.5f);
-      functionGeometry->draw(model, GL_LINE_STRIP, currentFrame * 0.5f);
-      derivativeGeometry->draw(model, GL_LINES, currentFrame * 0.5f);
+      curveGeometry->draw(model, GL_LINE_STRIP, currentFrame * 0.5f);
+      //functionGeometry->draw(model, GL_LINE_STRIP, currentFrame * 0.5f);
+      //derivativeGeometry->draw(model, GL_LINES, currentFrame * 0.5f);
 
       glfwSwapBuffers(window);
       glfwPollEvents();
@@ -133,39 +149,85 @@ private:
     glEnable(GL_DEPTH_TEST);
   }
 
-  vector<float> getFunctionPoints(std::function<float(float)> func,
-                                  vector<float> domain, float stepSize) {
-    vector<float> functionHeights = {};
-    vector<float> functionAbsHeights = {};
-    vector<float> functionSteps = {};
-    float step = domain[0];
+  vector<float> zipValuesWithSteps (vector<float> steps,
+				    vector<float> values,
+				    int numValuesPerStep) {
+    vector<float> zipped = {};
+    int valueIndex = 0;
 
-    while (step < domain[1]) {
-      functionSteps.push_back(step);
-      functionHeights.push_back(func(step));
-      functionAbsHeights.push_back(abs(func(step)));
+    for(int i = 0; i < steps.size(); i++){
+      for(int j = 0; j < numValuesPerStep; j++) {
+	zipped.push_back(values[valueIndex]);
+	valueIndex += 1;
+      }
 
-      step += stepSize;
+      zipped.push_back(steps[i]);
     }
 
-    float heightMax =
-        *std::max_element(functionAbsHeights.begin(), functionAbsHeights.end());
-    float domainMax = std::max(abs(domain[0]), abs(domain[1]));
-
-    std::for_each(functionHeights.begin(), functionHeights.end(), [&heightMax](float &el){
-      el *= 1.0f / (heightMax + 2.0f); });
-    std::for_each(functionSteps.begin(), functionSteps.end(), [&domainMax](float &el){
-      el *= 1.0f / (domainMax + 1.0f); });
-
-    vector<float> functionPoints = {};
-
-    for(int i = 0; i < functionSteps.size(); i++){
-      functionPoints.push_back(functionSteps[i]);
-      functionPoints.push_back(functionHeights[i]);
-    }
-
-    return functionPoints;
+    return zipped;
   }
+
+  vector<float> getSteps(vector<float> domain, float stepSize) {
+    vector<float> steps = {};
+    float stepValue = domain[0];
+
+    while (stepValue < domain[1]) {
+      steps.push_back(stepValue);
+
+      stepValue += stepSize;
+    }
+
+    return steps;
+  }
+
+  /*
+   * returns scaled function values on step
+   */
+  vector<float> getFunctionOnSteps(std::function<float(float)> func, vector<float> steps){
+    vector<float> values = {};
+    vector<float> absValues = {};
+    
+    for(int i = 0; i < steps.size(); i++){
+      values.push_back(func(steps[i]));
+      absValues.push_back(abs(func(steps[i])));
+    }
+
+    float absValuesMax =
+      *std::max_element(absValues.begin(), absValues.end());
+
+    std::for_each(values.begin(), values.end(), [&absValuesMax](float &el){
+      el *= 1.0f / (absValuesMax + 2.0f); });
+
+
+    return values;
+  }
+
+  vector<float> getParametrizedCurvePoints(vector<std::function<float(float)>> curve,
+					   vector<float> steps) {
+
+    vector<float> values = {};
+
+    for(int i = 0; i < steps.size(); i++) {
+      for(int j = 0; j < curve.size(); j++){
+	values.push_back(curve[j](steps[i]));
+      }
+    }
+
+    return values;
+  }
+
+
+  //
+  //
+  //    vector<float> functionPoints = {};
+  //
+  //    for(int i = 0; i < functionSteps.size(); i++){
+  //      functionPoints.push_back(functionSteps[i]);
+  //      functionPoints.push_back(functionHeights[i]);
+  //    }
+  //
+  //    return functionPoints;
+
   /*
    *
    */
@@ -179,7 +241,8 @@ private:
    */
   void close() const {
     axisGeometry->destroy();
-    functionGeometry->destroy();
+    curveGeometry->destroy();
+    //functionGeometry->destroy();
     glfwTerminate();
   }
 };

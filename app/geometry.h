@@ -8,23 +8,19 @@ public:
   GLuint EBO{};
   int verticesSize;
   vector<float> vertices;
-
+  int numAttrsPerVertex;
   Shader *shader;
 
   Geometry(vector<float> vertices, const char *vsPath, const char *gsPath,
-           const char *fsPath) {
+           const char *fsPath, int numAttrsPerVertex) {
     shader = new Shader(vsPath, fsPath, gsPath);
     this->verticesSize = vertices.size() * sizeof(float);
     this->vertices = vertices;
+    this->numAttrsPerVertex = numAttrsPerVertex;
+    
     genBuffers();
     bindVBO(verticesSize, vertices.data());
-    //    bindEBO(indicesSize, indices);
-    setVertexAttrs(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), nullptr);
-    //    setVertexAttrs(1, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(2
-    //    * sizeof(float)));
-
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindVertexArray(0);
+    
 
     glUseProgram(shader->ID);
   }
@@ -51,7 +47,7 @@ public:
     shader->use();
     shader->setFloat("time", time);
     glBindVertexArray(VAO);
-    glDrawArrays(primitive, 0, vertices.size() / 2);
+    glDrawArrays(primitive, 0, vertices.size() / this->numAttrsPerVertex);
   }
 
   /*
@@ -73,6 +69,9 @@ public:
   void destroy() const {
     glDeleteVertexArrays(1, &VAO);
     glDeleteBuffers(1, &VBO);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
+
     //    glDeleteBuffers(1, &EBO);
     delete shader;
   }
